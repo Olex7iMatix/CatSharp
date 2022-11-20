@@ -2,8 +2,8 @@
 
 CatSharp (cat#, cats) is a programming language based on JS, C# etc
 
-# Instalation
-## You need:
+# Installation
+## Things You need:
 * Makefile
 * gcc
 ## Compile:
@@ -24,7 +24,7 @@ pack Example {
 }
 ```
 # Docs
-To start coding in Cat# you need to know how the base should look like. At first you need to have:
+To start coding in Cat# you need to know how the base file look like. At first you need to have:
 ```cat#
 pack <packageName> {
 
