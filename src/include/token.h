@@ -12,6 +12,8 @@ typedef struct TOKEN_STRUCT {
         TOKEN_DOT,
         TOKEN_LPAREN,
         TOKEN_RPAREN,
+        TOKEN_LBRACE,
+        TOKEN_RBRACE,
         TOKEN_EOF
     } type;
 

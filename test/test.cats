@@ -1,2 +1,5 @@
-var kot = "kot";
-log(kot);
+void Log() {
+    log("UwU");
+};
+
+Log();
