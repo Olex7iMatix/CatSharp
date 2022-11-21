@@ -43,3 +43,7 @@ class <Class> {
 }
 ```
 this is requirenments of .cat# application
+
+# Credits
+
+* Ianertson
