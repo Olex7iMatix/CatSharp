@@ -187,6 +187,23 @@ AST_T* parser_parse_pack_definition(parser_T* parser, scope_T* scope)
     return ast;
 }
 
+AST_T* parser_parse_import_statement(parser_T* parser, scope_T* scope)
+{
+    AST_T* ast = init_ast(AST_IMPORT_STATEMENT);
+    parser_eat(parser, TOKEN_ID); // pack
+    char* pack_name = parser->current_token->value;
+    ast->pack_definition_name = calloc(strlen(pack_name) + 1, sizeof(char));
+    strcpy(ast->pack_definition_name, pack_name);
+    parser_eat(parser, TOKEN_ID); // pack name
+    parser_eat(parser, TOKEN_LBRACE);
+
+    ast->pack_definition_body = parser_parse_statements(parser, scope);
+    ast->scope = scope;
+
+    parser_eat(parser, TOKEN_RBRACE);
+
+    return ast;
+}
 
 AST_T* parser_parse_class_definition(parser_T* parser, scope_T* scope)
 {

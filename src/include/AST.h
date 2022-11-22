@@ -9,6 +9,7 @@ typedef struct AST_STRUCT {
         AST_FUNCTION_DEFINITION,
         AST_PACK_DEFINITION,
         AST_CLASS_DEFINITION,
+        AST_IMPORT_STATEMENT,
         AST_STRING,
         AST_FUNCTION_CALL,
         AST_NOOP,
@@ -43,6 +44,10 @@ typedef struct AST_STRUCT {
     struct AST_STRUCT* class_definition_body;
     size_t class_definition_body_size;
     char* class_definition_name;
+    
+    /* AST_PACK_DEFINITION */
+    char* import_statement_imp_name;
+    struct AST_STRUCT** import_statement_value;
 
     /* AST_STRING */
     char* string_value;

@@ -29,6 +29,10 @@ AST_T* init_ast(int type) {
     /* AST_CLASS_DEFINITION */
     ast->class_definition_body = (void*) 0;
     ast->class_definition_name = (void*) 0;
+    
+    /* AST_CLASS_DEFINITION */
+    ast->import_statement_imp_name = (void*) 0;
+    ast->import_statement_value = (void*) 0;
 
     /* AST_STRING */
     ast->string_value = (void*) 0;
