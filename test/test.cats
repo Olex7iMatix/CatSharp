@@ -1,5 +1,11 @@
-void Log() {
-    log("UwU");
-};
+pack CatSharp {
+    class Console {
 
-Log();
+        void Log() {
+            log("[CatSharp] UwU");
+        };
+
+        Log();
+
+    };
+};

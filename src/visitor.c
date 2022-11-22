@@ -38,6 +38,8 @@ AST_T* visitor_visit(visitor_T* visitor, AST_T* node) {
         case AST_VARIABLE: return visitor_visit_variable(visitor, node); break;
         case AST_FUNCTION_CALL: return visitor_visit_function_call(visitor, node); break;
         case AST_FUNCTION_DEFINITION: return visitor_visit_function_definition(visitor, node); break;
+        case AST_PACK_DEFINITION: return visitor_visit_pack(visitor, node); break;
+        case AST_CLASS_DEFINITION: return visitor_visit_class(visitor, node); break;
         case AST_STRING: return visitor_visit_string(visitor, node); break;
         case AST_COMPOUND: return visitor_visit_compound(visitor, node); break;
         case AST_NOOP: return node; break;
@@ -111,6 +113,22 @@ AST_T* visitor_visit_string(visitor_T* visitor, AST_T* node) {
 AST_T* visitor_visit_compound(visitor_T* visitor, AST_T* node) {
     for (int i = 0; i < node->compound_size; i++) {
         visitor_visit(visitor, node->compound_value[i]);
+    }
+
+    return init_ast(AST_NOOP);
+}
+
+AST_T* visitor_visit_pack(visitor_T* visitor, AST_T* node) {
+    for (int i = 0; i < node->pack_definition_body->compound_size; i++) {
+        visitor_visit(visitor, node->pack_definition_body->compound_value[i]);
+    }
+
+    return init_ast(AST_NOOP);
+}
+
+AST_T* visitor_visit_class(visitor_T* visitor, AST_T* node) {
+    for (int i = 0; i < node->class_definition_body->compound_size; i++) {
+        visitor_visit(visitor, node->class_definition_body->compound_value[i]);
     }
 
     return init_ast(AST_NOOP);

@@ -84,6 +84,7 @@ AST_T* parser_parse_expr(parser_T* parser, scope_T* scope)
     switch (parser->current_token->type)
     {
         case TOKEN_STRING: return parser_parse_string(parser, scope);
+        case TOKEN_INT: return parser_parse_int(parser, scope);
         case TOKEN_ID: return parser_parse_id(parser, scope);
     }
 
@@ -168,6 +169,43 @@ AST_T* parser_parse_function_definition(parser_T* parser, scope_T* scope)
     return ast;
 }
 
+AST_T* parser_parse_pack_definition(parser_T* parser, scope_T* scope)
+{
+    AST_T* ast = init_ast(AST_PACK_DEFINITION);
+    parser_eat(parser, TOKEN_ID); // pack
+    char* pack_name = parser->current_token->value;
+    ast->pack_definition_name = calloc(strlen(pack_name) + 1, sizeof(char));
+    strcpy(ast->pack_definition_name, pack_name);
+    parser_eat(parser, TOKEN_ID); // pack name
+    parser_eat(parser, TOKEN_LBRACE);
+
+    ast->pack_definition_body = parser_parse_statements(parser, scope);
+    ast->scope = scope;
+
+    parser_eat(parser, TOKEN_RBRACE);
+
+    return ast;
+}
+
+
+AST_T* parser_parse_class_definition(parser_T* parser, scope_T* scope)
+{
+    AST_T* ast = init_ast(AST_CLASS_DEFINITION);
+    parser_eat(parser, TOKEN_ID); // class
+    char* class_name = parser->current_token->value;
+    ast->class_definition_name = calloc(strlen(class_name) + 1, sizeof(char));
+    strcpy(ast->class_definition_name, class_name);
+    parser_eat(parser, TOKEN_ID); // class name
+    parser_eat(parser, TOKEN_LBRACE);
+
+    ast->class_definition_body = parser_parse_statements(parser, scope);
+    ast->scope = scope;
+
+    parser_eat(parser, TOKEN_RBRACE);
+
+    return ast;
+}
+
 AST_T* parser_parse_variable(parser_T* parser, scope_T* scope)
 {
     char* token_value = parser->current_token->value;
@@ -195,6 +233,18 @@ AST_T* parser_parse_string(parser_T* parser, scope_T* scope)
     return ast_string;
 }
 
+AST_T* parser_parse_int(parser_T* parser, scope_T* scope)
+{
+    AST_T* ast_int = init_ast(AST_STRING);
+    ast_int->int_value = parser->current_token->value;
+
+    parser_eat(parser, TOKEN_INT);
+
+    ast_int->scope = scope;
+
+    return ast_int;
+}
+
 AST_T* parser_parse_id(parser_T* parser, scope_T* scope)
 {
     if (strcmp(parser->current_token->value, "var") == 0)
@@ -204,6 +254,18 @@ AST_T* parser_parse_id(parser_T* parser, scope_T* scope)
     else if (strcmp(parser->current_token->value, "void") == 0)
     {
         return parser_parse_function_definition(parser, scope);
+    }
+    else if (strcmp(parser->current_token->value, "pack") == 0)
+    {
+        return parser_parse_pack_definition(parser, scope);
+    }
+    else if (strcmp(parser->current_token->value, "class") == 0)
+    {
+        return parser_parse_class_definition(parser, scope);
+    }
+    else if (strcmp(parser->current_token->value, "imp") == 0)
+    {
+        return parser_parse_import_statement(parser, scope);
     }
     else
     {
