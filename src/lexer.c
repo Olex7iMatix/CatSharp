@@ -18,7 +18,7 @@ token_T* lexer_collect_int(lexer_T* lexer) {
     char* value = calloc(1, sizeof(char));
     value[0] = '\0';
 
-    while (lexer->c != ';') {
+    while (isdigit(lexer->c)) {
         char* s = lexer_get_current_char_as_string(lexer);
         value = realloc(value, (strlen(value) + strlen(s) + 1) * sizeof(char));
         strcat(value, s);
@@ -53,10 +53,10 @@ token_T* lexer_get_next_token(lexer_T* lexer) {
 
         if (lexer->c == '"') return lexer_collect_string(lexer);
         if (isdigit(lexer->c)) return lexer_collect_int(lexer);
-        if (lexer->c == '#') return lexer_comment(lexer);
 
         switch (lexer->c)
         {
+            case '#': return lexer_advance_with_token(lexer, lexer_comment(lexer)); break;
             case '=': return lexer_advance_with_token(lexer, init_token(TOKEN_EQUALS, lexer_get_current_char_as_string(lexer))); break;
             case ';': return lexer_advance_with_token(lexer, init_token(TOKEN_SEMI, lexer_get_current_char_as_string(lexer))); break;
             case '(': return lexer_advance_with_token(lexer, init_token(TOKEN_LPAREN, lexer_get_current_char_as_string(lexer))); break;
@@ -77,7 +77,7 @@ token_T* lexer_comment(lexer_T* lexer) {
     char* value = calloc(1, sizeof(char));
     value[0] = '\0';
 
-    while (lexer->c != '#') {
+    while (lexer->c != ';') {
         char* s = lexer_get_current_char_as_string(lexer);
         value = realloc(value, (strlen(value) + strlen(s) + 1) * sizeof(char));
         strcat(value, s);
@@ -87,10 +87,7 @@ token_T* lexer_comment(lexer_T* lexer) {
 
     lexer_advance(lexer);
 
-    if (isspace(lexer->c) || lexer->c == 13) lexer_skip_whitespace(lexer);
-
-    printf("%s\n", value);
-    return init_token(TOKEN_COMMENT, value);
+    return init_token(TOKEN_COMMENT, "#");
 }
 
 token_T* lexer_collect_string(lexer_T* lexer) {

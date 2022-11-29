@@ -25,8 +25,6 @@ static AST_T* builtin_function_log(visitor_T* visitor, AST_T** args, int args_si
 
 visitor_T* init_visitor() {
     visitor_T* visitor = calloc(1, sizeof(struct VISITOR_STRUCT));
-    visitor->variable_definitions = (void*) 0;
-    visitor->variable_definitions_size = 0;
 
     return visitor;
 }
@@ -40,6 +38,7 @@ AST_T* visitor_visit(visitor_T* visitor, AST_T* node) {
         case AST_FUNCTION_DEFINITION: return visitor_visit_function_definition(visitor, node); break;
         case AST_PACK_DEFINITION: return visitor_visit_pack(visitor, node); break;
         case AST_CLASS_DEFINITION: return visitor_visit_class(visitor, node); break;
+        case AST_IMPORT_STATEMENT: return visitor_visit_import_statement(visitor, node); break;
         case AST_STRING: return visitor_visit_string(visitor, node); break;
         case AST_COMPOUND: return visitor_visit_compound(visitor, node); break;
         case AST_NOOP: return node; break;
@@ -51,19 +50,13 @@ AST_T* visitor_visit(visitor_T* visitor, AST_T* node) {
     return init_ast(AST_NOOP);
 }
 
+AST_T* visitor_visit_import_statement(visitor_T* visitor, AST_T* node) {
+    char* name = node->import_statement_imp_name;
+       
+}
+
 AST_T* visitor_visit_variable_definition(visitor_T* visitor, AST_T* node) {
-    if (visitor->variable_definitions == (void*) 0) {
-        visitor->variable_definitions = calloc(1, sizeof(struct AST_STRUCT));
-        visitor->variable_definitions[0] = node;
-        visitor->variable_definitions_size += 1;
-    } else {
-        visitor->variable_definitions_size += 1;
-        visitor->variable_definitions = realloc(
-            visitor->variable_definitions,
-            visitor->variable_definitions_size * sizeof(struct AST_STRUCT*)
-        );
-        visitor->variable_definitions[visitor->variable_definitions_size-1] = node;
-    }
+    scope_add_var_def(node->scope, node);
 
     return node;
 }
@@ -78,19 +71,17 @@ AST_T* visitor_visit_function_definition(visitor_T* visitor, AST_T* node) {
 }
 
 AST_T* visitor_visit_variable(visitor_T* visitor, AST_T* node) {
-    for (int i = 0; i < visitor->variable_definitions_size; i++) {
-        AST_T* vardef = visitor->variable_definitions[i];
-
-        if (strcmp(vardef->variable_definition_variable_name, node->variable_name) == 0) {
-            return visitor_visit(visitor, vardef->variable_definition_value);
-        }
-    }
+    AST_T* vdef = scope_get_var_def(node->scope, node->variable_name);
+    
+    if (vdef != (void*) 0)
+        return visitor_visit(visitor, vdef->variable_definition_value);
 
     printf("Undefined variable `%s`\n", node->variable_name);
-    return node;
+    exit(1);
 }
 
 AST_T* visitor_visit_function_call(visitor_T* visitor, AST_T* node) {
+    printf("%s\n", node->class_definition_name);
     if (strcmp(node->function_call_name, "log") == 0)
     {
         return builtin_function_log(visitor, node->function_call_arguments, node->function_call_arguments_size);
@@ -98,12 +89,24 @@ AST_T* visitor_visit_function_call(visitor_T* visitor, AST_T* node) {
 
     AST_T* fdef = scope_get_function_def(node->scope, node->function_call_name);
 
-    if (fdef != (void*) 0) {
-        return visitor_visit(visitor, fdef->function_definition_body);
+    if (fdef == (void*) 0){
+        printf("Undefined method `%s`\n", node->function_call_name);
+        exit (1);
     }
 
-    printf("Undefined method `%s`\n", node->function_call_name);
-    exit (1);
+    for (int i = 0; i < node->function_call_arguments_size; i++) {
+        AST_T* ast_var = (AST_T*) fdef->function_definition_args[i];
+        AST_T* ast_value = (AST_T*) node->function_call_arguments[i];
+
+        AST_T* var_def = init_ast(AST_VARIABLE_DEFINITION);
+        var_def->variable_definition_variable_name = calloc(strlen(ast_var->variable_name)+ 1, sizeof(char));
+        strcpy(var_def->variable_definition_variable_name, ast_var->variable_name);
+        var_def->variable_definition_value = ast_value;
+        
+        scope_add_var_def(fdef->function_definition_body->scope, var_def);
+    }
+    
+    return visitor_visit(visitor, fdef->function_definition_body);
 }
 
 AST_T* visitor_visit_string(visitor_T* visitor, AST_T* node) {

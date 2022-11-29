@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <string.h>
-#include <json_c/json.h>
 #include "include/lexer.h"
 #include "include/io.h"
 #include "include/parser.h"

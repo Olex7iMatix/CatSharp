@@ -1,6 +1,7 @@
 #include "include/parser.h"
 #include <stdio.h>
 #include <string.h>
+#include "json/json.h"
 
 static scope_T* get_node_scope(parser_T* parser, AST_T* node) {
     return node->scope == (void*) 0 ? parser->scope : node->scope;
@@ -158,6 +159,22 @@ AST_T* parser_parse_function_definition(parser_T* parser, scope_T* scope)
     strcpy(ast->function_definition_name, function_name);
     parser_eat(parser, TOKEN_ID); // void name
     parser_eat(parser, TOKEN_LPAREN);
+
+    ast->function_definition_args = calloc(1, sizeof(struct AST_STRUCT*));
+
+    AST_T* arg = parser_parse_variable(parser, scope);
+    ast->function_definition_args_size += 1;
+    ast->function_definition_args[ast->function_definition_args_size-1] = arg;
+
+    while (parser->current_token->type == TOKEN_COMMA) {
+        parser_eat(parser, TOKEN_COMMA);
+        ast->function_definition_args_size += 1;
+        ast->function_definition_args = realloc(ast->function_definition_args, ast->function_definition_args_size * sizeof(struct AST_STRUCT*));
+
+        AST_T* arg = parser_parse_variable(parser, scope);
+        ast->function_definition_args[ast->function_definition_args_size-1] = arg;
+    }
+
     parser_eat(parser, TOKEN_RPAREN);
     parser_eat(parser, TOKEN_LBRACE);
 
@@ -190,18 +207,10 @@ AST_T* parser_parse_pack_definition(parser_T* parser, scope_T* scope)
 AST_T* parser_parse_import_statement(parser_T* parser, scope_T* scope)
 {
     AST_T* ast = init_ast(AST_IMPORT_STATEMENT);
-    parser_eat(parser, TOKEN_ID); // pack
+    parser_eat(parser, TOKEN_ID); // package name
     char* pack_name = parser->current_token->value;
-    ast->pack_definition_name = calloc(strlen(pack_name) + 1, sizeof(char));
-    strcpy(ast->pack_definition_name, pack_name);
-    parser_eat(parser, TOKEN_ID); // pack name
-    parser_eat(parser, TOKEN_LBRACE);
-
-    ast->pack_definition_body = parser_parse_statements(parser, scope);
-    ast->scope = scope;
-
-    parser_eat(parser, TOKEN_RBRACE);
-
+    ast->import_statement_imp_name = calloc(strlen(pack_name) + 1, sizeof(char));
+    strcpy(ast->import_statement_imp_name, pack_name);
     return ast;
 }
 

@@ -34,6 +34,7 @@ typedef struct AST_STRUCT {
     struct AST_STRUCT* function_definition_body;
     char* function_definition_name;
     struct AST_STRUCT** function_definition_args;
+    size_t function_definition_args_size;
     
     /* AST_PACK_DEFINITION */
     struct AST_STRUCT* pack_definition_body;
@@ -47,7 +48,6 @@ typedef struct AST_STRUCT {
     
     /* AST_PACK_DEFINITION */
     char* import_statement_imp_name;
-    struct AST_STRUCT** import_statement_value;
 
     /* AST_STRING */
     char* string_value;

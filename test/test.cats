@@ -1,11 +1,5 @@
-pack CatSharp {
-    class Console {
-
-        void Log() {
-            log("[CatSharp] UwU");
-        };
-
-        Log();
-
+pack CatSharpTests {
+    class test {
+        imp CatSharp;
     };
 };

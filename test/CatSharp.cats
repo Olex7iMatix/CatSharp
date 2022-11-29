@@ -1,11 +1,11 @@
 pack CatSharp {
     class Console {
 
-        void Log() {
-            log("[CatSharp] UwU");
+        void welocme(name) {
+            log(name);
         };
 
-        Log();
+        welocme("Olek");
 
     };
 };

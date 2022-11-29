@@ -21,6 +21,8 @@ AST_T* init_ast(int type) {
     /* AST_FUNCTION_DEFINITION */
     ast->function_definition_body = (void*) 0;
     ast->function_definition_name = (void*) 0;
+    ast->function_definition_args = (void*) 0;
+    ast->function_definition_args_size = 0;
     
     /* AST_PACK_DEFINITION */
     ast->pack_definition_body = (void*) 0;
