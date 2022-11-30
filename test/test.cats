@@ -1,5 +1,10 @@
-pack CatSharpTests {
-    class test {
-        imp CatSharp;
+pack Life {
+    class People {
+        if (false) {
+            log("UwU");
+        }
+        else {
+            log("OwO");
+        };
     };
 };

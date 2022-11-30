@@ -35,6 +35,10 @@ AST_T* parser_parse_variable_definition(parser_T* parser, scope_T* scope);
 
 AST_T* parser_parse_function_definition(parser_T* parser, scope_T* scope);
 
+AST_T* parser_parse_if_statement(parser_T* parser, scope_T* scope);
+
+AST_T* parser_parse_else_statement(parser_T* parser, scope_T* scope, AST_T* if_ast);
+
 AST_T* parser_parse_pack_definition(parser_T* parser, scope_T* scope);
 
 AST_T* parser_parse_class_definition(parser_T* parser, scope_T* scope);

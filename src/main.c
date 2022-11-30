@@ -11,18 +11,22 @@ int print_help() {
     printf("CatSharp help:\n");
     printf("Usage: `cats <filepath> [options]`\n");
     printf("Version: `%s`\n", VERSION);
-    return 0;
+    exit(1);
 }
 
 int main(int argc, char** argv) {
-    if (argc < 2) return print_help();
+    if (argc < 3) print_help();
 
-    lexer_T* lexer = init_lexer(get_file_content(argv[1]));
+    if (strcmp(argv[1], "compile") == 0) {
+        lexer_T* lexer = init_lexer(get_file_content(argv[2]));
 
-    parser_T* parser = init_parser(lexer);
-    AST_T* root = parser_parse(parser, parser->scope);
-    visitor_T* visitor = init_visitor();
-    visitor_visit(visitor, root);
+        parser_T* parser = init_parser(lexer);
+        AST_T* root = parser_parse(parser, parser->scope);
+        visitor_T* visitor = init_visitor();
+        visitor_visit(visitor, root);
+    } else if (strcmp(argv[1], "help") == 0) {
+        print_help();
+    }
 
     return 0;
 }

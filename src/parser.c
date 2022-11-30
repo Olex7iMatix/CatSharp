@@ -1,7 +1,6 @@
 #include "include/parser.h"
 #include <stdio.h>
 #include <string.h>
-#include "json/json.h"
 
 static scope_T* get_node_scope(parser_T* parser, AST_T* node) {
     return node->scope == (void*) 0 ? parser->scope : node->scope;
@@ -207,10 +206,59 @@ AST_T* parser_parse_pack_definition(parser_T* parser, scope_T* scope)
 AST_T* parser_parse_import_statement(parser_T* parser, scope_T* scope)
 {
     AST_T* ast = init_ast(AST_IMPORT_STATEMENT);
-    parser_eat(parser, TOKEN_ID); // package name
+    parser_eat(parser, TOKEN_ID);
     char* pack_name = parser->current_token->value;
+    parser_eat(parser, TOKEN_ID);
     ast->import_statement_imp_name = calloc(strlen(pack_name) + 1, sizeof(char));
     strcpy(ast->import_statement_imp_name, pack_name);
+    return ast;
+}
+
+AST_T* parser_parse_if_statement(parser_T* parser, scope_T* scope)
+{
+    AST_T* ast = init_ast(AST_IF_STATEMENT);
+    parser_eat(parser, TOKEN_ID); // if
+    parser_eat(parser, TOKEN_LPAREN);
+    AST_T* ast_expr = parser_parse_expr(parser, scope);
+    ast->if_arg = ast_expr;
+    parser_eat(parser, TOKEN_RPAREN);
+    parser_eat(parser, TOKEN_LBRACE);
+
+    ast->if_body = parser_parse_statements(parser, scope);
+    ast->scope = scope;
+
+    parser_eat(parser, TOKEN_RBRACE);
+
+    if (parser->current_token->type == TOKEN_ID) {
+        if (strcmp (parser->current_token->value, "else") == 0) {
+            parser_parse_else_statement(parser, scope, ast);
+            return ast;
+        }
+    }
+
+    return ast;
+}
+
+AST_T* parser_parse_else_statement(parser_T* parser, scope_T* scope, AST_T* if_ast)
+{
+    AST_T* ast = init_ast(AST_ELSE_STATEMENT);
+    parser_eat(parser, TOKEN_ID); // else
+
+    if (parser->current_token->type == TOKEN_LBRACE) {
+        parser_eat(parser, TOKEN_LBRACE);
+
+        ast->else_body = parser_parse_statements(parser, scope);
+        ast->scope = scope;
+
+        parser_eat(parser, TOKEN_RBRACE);
+    } else if (parser->current_token->type == TOKEN_ID) {
+        parser_parse_if_statement(parser, scope);
+    } else {
+        printf("%s\n", parser->current_token->value);
+    }
+
+    if_ast->if_else = ast;
+
     return ast;
 }
 
@@ -261,9 +309,11 @@ AST_T* parser_parse_string(parser_T* parser, scope_T* scope)
 
 AST_T* parser_parse_int(parser_T* parser, scope_T* scope)
 {
-    AST_T* ast_int = init_ast(AST_STRING);
-    ast_int->int_value = parser->current_token->value;
-
+    AST_T* ast_int = init_ast(AST_INT);
+    int val;
+    sscanf(parser->current_token->value, "%d", &val);
+    ast_int->int_value = val;
+    
     parser_eat(parser, TOKEN_INT);
 
     ast_int->scope = scope;
@@ -292,6 +342,10 @@ AST_T* parser_parse_id(parser_T* parser, scope_T* scope)
     else if (strcmp(parser->current_token->value, "imp") == 0)
     {
         return parser_parse_import_statement(parser, scope);
+    }
+    else if (strcmp(parser->current_token->value, "if") == 0)
+    {
+        return parser_parse_if_statement(parser, scope);
     }
     else
     {

@@ -11,6 +11,12 @@ AST_T* visitor_visit(visitor_T* visitor, AST_T* node);
 
 AST_T* visitor_visit_variable_definition(visitor_T* visitor, AST_T* node);
 
+AST_T* visitor_visit_import_statement(visitor_T* visitor, AST_T* node);
+
+AST_T* visitor_visit_if_statement(visitor_T* visitor, AST_T* node);
+
+AST_T* visitor_visit_else_statement(visitor_T* visitor, AST_T* node);
+
 AST_T* visitor_visit_function_definition(visitor_T* visitor, AST_T* node);
 
 AST_T* visitor_visit_variable(visitor_T* visitor, AST_T* node);

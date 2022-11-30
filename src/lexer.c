@@ -14,11 +14,10 @@ lexer_T* init_lexer(char* content) {
 }
 
 token_T* lexer_collect_int(lexer_T* lexer) {
-    printf("num\n");
     char* value = calloc(1, sizeof(char));
     value[0] = '\0';
 
-    while (isdigit(lexer->c)) {
+    while (!(lexer->c == ';')) {
         char* s = lexer_get_current_char_as_string(lexer);
         value = realloc(value, (strlen(value) + strlen(s) + 1) * sizeof(char));
         strcat(value, s);
@@ -48,11 +47,11 @@ token_T* lexer_get_next_token(lexer_T* lexer) {
     while (lexer->c != '\0' && lexer->i < strlen(lexer->content)) {
         if (isspace(lexer->c) || iswspace(lexer->c) || lexer->c == 13) lexer_skip_whitespace(lexer);
 
+        if (isdigit(lexer->c)) return lexer_collect_int(lexer);
         if (isalnum(lexer->c))
             return lexer_collect_id(lexer);
 
         if (lexer->c == '"') return lexer_collect_string(lexer);
-        if (isdigit(lexer->c)) return lexer_collect_int(lexer);
 
         switch (lexer->c)
         {

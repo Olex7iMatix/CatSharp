@@ -1,5 +1,8 @@
 #include "include/visitor.h"
 #include "include/AST.h"
+#include "include/parser.h"
+#include "include/lexer.h"
+#include "include/io.h"
 #include "include/scope.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -39,6 +42,8 @@ AST_T* visitor_visit(visitor_T* visitor, AST_T* node) {
         case AST_PACK_DEFINITION: return visitor_visit_pack(visitor, node); break;
         case AST_CLASS_DEFINITION: return visitor_visit_class(visitor, node); break;
         case AST_IMPORT_STATEMENT: return visitor_visit_import_statement(visitor, node); break;
+        case AST_IF_STATEMENT: return visitor_visit_if_statement(visitor, node); break;
+        case AST_ELSE_STATEMENT: return visitor_visit_else_statement(visitor, node); break;
         case AST_STRING: return visitor_visit_string(visitor, node); break;
         case AST_COMPOUND: return visitor_visit_compound(visitor, node); break;
         case AST_NOOP: return node; break;
@@ -50,9 +55,30 @@ AST_T* visitor_visit(visitor_T* visitor, AST_T* node) {
     return init_ast(AST_NOOP);
 }
 
+AST_T* visitor_visit_if_statement(visitor_T* visitor, AST_T* node) {
+    if (strcmp(node->if_arg->variable_name, "true") == 0) {
+        visitor_visit(visitor, node->if_body);
+    } else if (strcmp(node->if_arg->variable_name, "false") == 0) {
+        visitor_visit(visitor, node->if_else->else_body);
+    }
+    return node;
+}
+
+AST_T* visitor_visit_else_statement(visitor_T* visitor, AST_T* node) {
+
+}
+
 AST_T* visitor_visit_import_statement(visitor_T* visitor, AST_T* node) {
     char* name = node->import_statement_imp_name;
-       
+
+    lexer_T* lexer = init_lexer(get_file_content(name));
+
+    parser_T* parser = init_parser(lexer);
+    AST_T* root = parser_parse(parser, node->scope);
+    visitor_T* ast_visitor = init_visitor();
+    visitor_visit(ast_visitor, root);
+
+    return node;
 }
 
 AST_T* visitor_visit_variable_definition(visitor_T* visitor, AST_T* node) {
@@ -81,7 +107,6 @@ AST_T* visitor_visit_variable(visitor_T* visitor, AST_T* node) {
 }
 
 AST_T* visitor_visit_function_call(visitor_T* visitor, AST_T* node) {
-    printf("%s\n", node->class_definition_name);
     if (strcmp(node->function_call_name, "log") == 0)
     {
         return builtin_function_log(visitor, node->function_call_arguments, node->function_call_arguments_size);

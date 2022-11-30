@@ -10,7 +10,10 @@ typedef struct AST_STRUCT {
         AST_PACK_DEFINITION,
         AST_CLASS_DEFINITION,
         AST_IMPORT_STATEMENT,
+        AST_IF_STATEMENT,
+        AST_ELSE_STATEMENT,
         AST_STRING,
+        AST_INT,
         AST_FUNCTION_CALL,
         AST_NOOP,
         AST_COMPOUND,
@@ -36,6 +39,14 @@ typedef struct AST_STRUCT {
     struct AST_STRUCT** function_definition_args;
     size_t function_definition_args_size;
     
+    /* AST_IF_STATEMENT */
+    struct AST_STRUCT* if_body;
+    struct AST_STRUCT* if_arg;
+    struct AST_STRUCT* if_else;
+    
+    /* AST_ELSE_STATEMENT */
+    struct AST_STRUCT* else_body;
+    
     /* AST_PACK_DEFINITION */
     struct AST_STRUCT* pack_definition_body;
     size_t pack_definition_body_size;
@@ -53,7 +64,7 @@ typedef struct AST_STRUCT {
     char* string_value;
     
     /* AST_INT */
-    char* int_value;
+    int int_value;
 
     /* AST_COMPOUND */
     struct AST_STRUCT** compound_value;

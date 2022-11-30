@@ -24,6 +24,14 @@ AST_T* init_ast(int type) {
     ast->function_definition_args = (void*) 0;
     ast->function_definition_args_size = 0;
     
+    /* AST_IF_STATEMENT */
+    ast->if_body = (void*) 0;
+    ast->if_arg = (void*) 0;
+    ast->if_else = (void*) 0;
+    
+    /* AST_ELSE_STATEMENT */
+    ast->else_body = (void*) 0;
+
     /* AST_PACK_DEFINITION */
     ast->pack_definition_body = (void*) 0;
     ast->pack_definition_name = (void*) 0;
@@ -32,12 +40,14 @@ AST_T* init_ast(int type) {
     ast->class_definition_body = (void*) 0;
     ast->class_definition_name = (void*) 0;
     
-    /* AST_CLASS_DEFINITION */
+    /* AST_IMPORT_STATEMENT */
     ast->import_statement_imp_name = (void*) 0;
-    ast->import_statement_value = (void*) 0;
 
     /* AST_STRING */
     ast->string_value = (void*) 0;
+    
+    /* AST_INT */
+    ast->int_value = 0;
 
     /* AST_COMPOUND */
     ast->compound_value = (void*) 0;
