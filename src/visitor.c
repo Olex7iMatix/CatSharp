@@ -189,6 +189,7 @@ AST_T* visitor_visit_class(visitor_T* visitor, AST_T* node, scope_T* scope) {
     for (int i = 0; i < node->class_definition_body->compound_size; i++) {
         scope_T* new_scope = init_scope();
         visitor_visit(visitor, node->class_definition_body->compound_value[i], new_scope);
+        add_scope_to_scope(node->scope, new_scope, node->class_definition_name);
     }
 
     return init_ast(AST_NOOP);
