@@ -1,0 +1,6 @@
+[package]
+name = "CatSharp"
+version = "0.0.0.1"
+author = "Olex7iMatix"
+
+[modules]

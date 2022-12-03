@@ -322,8 +322,16 @@ AST_T* parser_parse_int(parser_T* parser, scope_T* scope)
     return ast_int;
 }
 
+AST_T* parser_parse_class_id(parser_T* parser, scope_T* scope)) {
+    AST_T* ast = init_ast(AST_CLASS_ID);
+    parser_eat(parser, TOKEN_DOT, "class_id");
+}
+
 AST_T* parser_parse_id(parser_T* parser, scope_T* scope)
 {
+
+    if (check_classname_in_scope(parser->scope, parser->current_token->value)) return parser_parse_class_id(parser, scope);
+
     if (strcmp(parser->current_token->value, "var") == 0)
     {
         return parser_parse_variable_definition(parser, scope);

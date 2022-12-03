@@ -1,7 +1,7 @@
-pack Life {
+pack Test {
     imp CatSharp;
-    class People {
-        LogInfo("UwU");
-        log("I don't like school!", "I hate my life");
+    class UwU {
+        var UwU = "OwO lubie koty xDDDDD";
+        LogError(UwU);
     };
 };

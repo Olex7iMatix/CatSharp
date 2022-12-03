@@ -8,9 +8,9 @@
 #include <stdio.h>
 #include <string.h>
 
-static AST_T* builtin_function_log(visitor_T* visitor, AST_T** args, int args_size) {
+static AST_T* builtin_function_log(visitor_T* visitor, AST_T** args, int args_size, scope_T* scope) {
     for (int i = 0; i < args_size; i++) {
-        AST_T* visited_ast = visitor_visit(visitor, args[i]);
+        AST_T* visited_ast = visitor_visit(visitor, args[i], scope);
 
         switch (visited_ast->type)
         {
@@ -32,20 +32,20 @@ visitor_T* init_visitor() {
     return visitor;
 }
 
-AST_T* visitor_visit(visitor_T* visitor, AST_T* node) {
+AST_T* visitor_visit(visitor_T* visitor, AST_T* node, scope_T* scope) {
     switch (node->type)
     {
-        case AST_VARIABLE_DEFINITION: return visitor_visit_variable_definition(visitor, node); break;
-        case AST_VARIABLE: return visitor_visit_variable(visitor, node); break;
-        case AST_FUNCTION_CALL: return visitor_visit_function_call(visitor, node); break;
-        case AST_FUNCTION_DEFINITION: return visitor_visit_function_definition(visitor, node); break;
-        case AST_PACK_DEFINITION: return visitor_visit_pack(visitor, node); break;
-        case AST_CLASS_DEFINITION: return visitor_visit_class(visitor, node); break;
-        case AST_IMPORT_STATEMENT: return visitor_visit_import_statement(visitor, node); break;
-        case AST_IF_STATEMENT: return visitor_visit_if_statement(visitor, node); break;
-        case AST_ELSE_STATEMENT: return visitor_visit_else_statement(visitor, node); break;
-        case AST_STRING: return visitor_visit_string(visitor, node); break;
-        case AST_COMPOUND: return visitor_visit_compound(visitor, node); break;
+        case AST_VARIABLE_DEFINITION: return visitor_visit_variable_definition(visitor, node, scope); break;
+        case AST_VARIABLE: return visitor_visit_variable(visitor, node, scope); break;
+        case AST_FUNCTION_CALL: return visitor_visit_function_call(visitor, node, scope); break;
+        case AST_FUNCTION_DEFINITION: return visitor_visit_function_definition(visitor, node, scope); break;
+        case AST_PACK_DEFINITION: return visitor_visit_pack(visitor, node, scope); break;
+        case AST_CLASS_DEFINITION: return visitor_visit_class(visitor, node, scope); break;
+        case AST_IMPORT_STATEMENT: return visitor_visit_import_statement(visitor, node, scope); break;
+        case AST_IF_STATEMENT: return visitor_visit_if_statement(visitor, node, scope); break;
+        case AST_ELSE_STATEMENT: return visitor_visit_else_statement(visitor, node, scope); break;
+        case AST_STRING: return visitor_visit_string(visitor, node, scope); break;
+        case AST_COMPOUND: return visitor_visit_compound(visitor, node, scope); break;
         case AST_NOOP: return node; break;
     }
 
@@ -55,61 +55,92 @@ AST_T* visitor_visit(visitor_T* visitor, AST_T* node) {
     return init_ast(AST_NOOP);
 }
 
-AST_T* visitor_visit_if_statement(visitor_T* visitor, AST_T* node) {
+AST_T* visitor_visit_if_statement(visitor_T* visitor, AST_T* node, scope_T* scope) {
     if (strcmp(node->if_arg->variable_name, "true") == 0) {
-        visitor_visit(visitor, node->if_body);
+        visitor_visit(visitor, node->if_body, scope);
     } else if (strcmp(node->if_arg->variable_name, "false") == 0) {
-        visitor_visit(visitor, node->if_else->else_body);
+        visitor_visit(visitor, node->if_else->else_body, scope);
     }
     return node;
 }
 
-AST_T* visitor_visit_else_statement(visitor_T* visitor, AST_T* node) {
-
+AST_T* visitor_visit_else_statement(visitor_T* visitor, AST_T* node, scope_T* scope) {
+    return node;
 }
 
-AST_T* visitor_visit_import_statement(visitor_T* visitor, AST_T* node) {
+#include "include/toml.h"
+
+AST_T* visitor_visit_import_statement(visitor_T* visitor, AST_T* node, scope_T* scope) {
     char* name = node->import_statement_imp_name;
 
-    lexer_T* lexer = init_lexer(get_file_content(name));
+    FILE* fp;
+    char errbuf[200];
+
+    fp = fopen("libs.toml", "r");
+
+    if (!fp) {
+        printf("[TOML] Error: Could not open file `libs.toml`\n");
+        exit(1);
+    }
+
+    toml_table_t* conf = toml_parse_file(fp, errbuf, sizeof(errbuf));
+
+    if (!conf) {
+        printf("[TOML] Error: Cannot parse file `libs.toml`\n");
+        exit(1);
+    }
+
+    toml_table_t* modules = toml_table_in(conf, "modules");
+    if (!modules) {
+        printf("[TOML] Error: Missing [modules]!\n");
+        exit(1);
+    }
+
+    toml_datum_t packPath = toml_string_in(modules, name);
+    if (!packPath.ok) {
+        printf("[TOML] Error: Cannot read modules.%s\n", name);
+        exit(1);
+    }
+
+    lexer_T* lexer = init_lexer(get_file_content(packPath.u.s));
 
     parser_T* parser = init_parser(lexer);
     AST_T* root = parser_parse(parser, node->scope);
     visitor_T* ast_visitor = init_visitor();
-    visitor_visit(ast_visitor, root);
+    visitor_visit(ast_visitor, root, scope);
 
     return node;
 }
 
-AST_T* visitor_visit_variable_definition(visitor_T* visitor, AST_T* node) {
-    scope_add_var_def(node->scope, node);
+AST_T* visitor_visit_variable_definition(visitor_T* visitor, AST_T* node, scope_T* scope) {
+    scope_add_var_def(scope, node);
 
     return node;
 }
 
-AST_T* visitor_visit_function_definition(visitor_T* visitor, AST_T* node) {
+AST_T* visitor_visit_function_definition(visitor_T* visitor, AST_T* node, scope_T* scope) {
     scope_add_function_def(
-        node->scope,
+        scope,
         node
     );
     
     return node;
 }
 
-AST_T* visitor_visit_variable(visitor_T* visitor, AST_T* node) {
+AST_T* visitor_visit_variable(visitor_T* visitor, AST_T* node, scope_T* scope) {
     AST_T* vdef = scope_get_var_def(node->scope, node->variable_name);
     
     if (vdef != (void*) 0)
-        return visitor_visit(visitor, vdef->variable_definition_value);
+        return visitor_visit(visitor, vdef->variable_definition_value, scope);
 
     printf("Undefined variable `%s`\n", node->variable_name);
     exit(1);
 }
 
-AST_T* visitor_visit_function_call(visitor_T* visitor, AST_T* node) {
+AST_T* visitor_visit_function_call(visitor_T* visitor, AST_T* node, scope_T* scope) {
     if (strcmp(node->function_call_name, "log") == 0)
     {
-        return builtin_function_log(visitor, node->function_call_arguments, node->function_call_arguments_size);
+        return builtin_function_log(visitor, node->function_call_arguments, node->function_call_arguments_size, scope);
     }
 
     AST_T* fdef = scope_get_function_def(node->scope, node->function_call_name);
@@ -131,32 +162,33 @@ AST_T* visitor_visit_function_call(visitor_T* visitor, AST_T* node) {
         scope_add_var_def(fdef->function_definition_body->scope, var_def);
     }
     
-    return visitor_visit(visitor, fdef->function_definition_body);
+    return visitor_visit(visitor, fdef->function_definition_body, scope);
 }
 
-AST_T* visitor_visit_string(visitor_T* visitor, AST_T* node) {
+AST_T* visitor_visit_string(visitor_T* visitor, AST_T* node, scope_T* scope) {
     return node;
 }
 
-AST_T* visitor_visit_compound(visitor_T* visitor, AST_T* node) {
+AST_T* visitor_visit_compound(visitor_T* visitor, AST_T* node, scope_T* scope) {
     for (int i = 0; i < node->compound_size; i++) {
-        visitor_visit(visitor, node->compound_value[i]);
+        visitor_visit(visitor, node->compound_value[i], scope);
     }
 
     return init_ast(AST_NOOP);
 }
 
-AST_T* visitor_visit_pack(visitor_T* visitor, AST_T* node) {
+AST_T* visitor_visit_pack(visitor_T* visitor, AST_T* node, scope_T* scope) {
     for (int i = 0; i < node->pack_definition_body->compound_size; i++) {
-        visitor_visit(visitor, node->pack_definition_body->compound_value[i]);
+        visitor_visit(visitor, node->pack_definition_body->compound_value[i], scope);
     }
 
     return init_ast(AST_NOOP);
 }
 
-AST_T* visitor_visit_class(visitor_T* visitor, AST_T* node) {
+AST_T* visitor_visit_class(visitor_T* visitor, AST_T* node, scope_T* scope) {
     for (int i = 0; i < node->class_definition_body->compound_size; i++) {
-        visitor_visit(visitor, node->class_definition_body->compound_value[i]);
+        scope_T* new_scope = init_scope();
+        visitor_visit(visitor, node->class_definition_body->compound_value[i], new_scope);
     }
 
     return init_ast(AST_NOOP);
