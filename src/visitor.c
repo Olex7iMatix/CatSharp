@@ -44,6 +44,8 @@ AST_T* visitor_visit(visitor_T* visitor, AST_T* node, scope_T* scope) {
         case AST_IMPORT_STATEMENT: return visitor_visit_import_statement(visitor, node, scope); break;
         case AST_IF_STATEMENT: return visitor_visit_if_statement(visitor, node, scope); break;
         case AST_ELSE_STATEMENT: return visitor_visit_else_statement(visitor, node, scope); break;
+        case AST_TRUE: return visitor_visit_true(visitor, node, scope); break;
+        case AST_FALSE: return visitor_visit_false(visitor, node, scope); break;
         case AST_STRING: return visitor_visit_string(visitor, node, scope); break;
         case AST_COMPOUND: return visitor_visit_compound(visitor, node, scope); break;
         case AST_NOOP: return node; break;
@@ -56,10 +58,16 @@ AST_T* visitor_visit(visitor_T* visitor, AST_T* node, scope_T* scope) {
 }
 
 AST_T* visitor_visit_if_statement(visitor_T* visitor, AST_T* node, scope_T* scope) {
-    if (strcmp(node->if_arg->variable_name, "true") == 0) {
-        visitor_visit(visitor, node->if_body, scope);
-    } else if (strcmp(node->if_arg->variable_name, "false") == 0) {
-        visitor_visit(visitor, node->if_else->else_body, scope);
+    switch (node->if_arg->type)
+    {
+    case 9:
+        return visitor_visit(visitor, node->if_body, scope);
+        break;
+    case 10:
+        return visitor_visit(visitor, node->if_else->else_body, scope);
+        break;
+    default:
+        break;
     }
     return node;
 }
@@ -68,10 +76,19 @@ AST_T* visitor_visit_else_statement(visitor_T* visitor, AST_T* node, scope_T* sc
     return node;
 }
 
+AST_T* visitor_visit_true(visitor_T* visitor, AST_T* node, scope_T* scope) {
+    return node;
+}
+
+AST_T* visitor_visit_false(visitor_T* visitor, AST_T* node, scope_T* scope) {
+    return node;
+}
+
 #include "include/toml.h"
 
 AST_T* visitor_visit_import_statement(visitor_T* visitor, AST_T* node, scope_T* scope) {
     char* name = node->import_statement_imp_name;
+    char* class_name = node->import_statement_class_name;
 
     FILE* fp;
     char errbuf[200];

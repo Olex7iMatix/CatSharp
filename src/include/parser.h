@@ -49,6 +49,10 @@ AST_T* parser_parse_int(parser_T* parser, scope_T* scope);
 
 AST_T* parser_parse_id(parser_T* parser, scope_T* scope);
 
+AST_T* parser_parse_true(parser_T* parser, scope_T* scope);
+
+AST_T* parser_parse_false(parser_T* parser, scope_T* scope);
+
 AST_T* comment(parser_T* parser, scope_T* scope);
 
 #endif

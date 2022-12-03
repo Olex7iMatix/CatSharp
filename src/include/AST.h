@@ -13,6 +13,8 @@ typedef struct AST_STRUCT {
         AST_IMPORT_STATEMENT,
         AST_IF_STATEMENT,
         AST_ELSE_STATEMENT,
+        AST_TRUE,
+        AST_FALSE,
         AST_STRING,
         AST_INT,
         AST_FUNCTION_CALL,
@@ -28,10 +30,6 @@ typedef struct AST_STRUCT {
 
     /* AST_VARIABLE */
     char* variable_name;
-
-    /* AST_TRUE */
-    int isTrue;
-    int isFalse;
 
     /* AST_FUNCTION_CALL */
     char* function_call_name;
@@ -64,6 +62,7 @@ typedef struct AST_STRUCT {
     
     /* AST_PACK_DEFINITION */
     char* import_statement_imp_name;
+    char* import_statement_class_name;
 
     /* AST_STRING */
     char* string_value;

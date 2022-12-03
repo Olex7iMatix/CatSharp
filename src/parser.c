@@ -88,8 +88,8 @@ AST_T* parser_parse_expr(parser_T* parser, scope_T* scope)
         case TOKEN_STRING: return parser_parse_string(parser, scope);
         case TOKEN_INT: return parser_parse_int(parser, scope);
         case TOKEN_ID: return parser_parse_id(parser, scope);
-        case TOKEN_TRUE: return parser_parse_id(parser, scope);
-        case TOKEN_FALSE: return parser_parse_id(parser, scope);
+        case TOKEN_TRUE: return parser_parse_true(parser, scope);
+        case TOKEN_FALSE: return parser_parse_false(parser, scope);
     }
 
     return init_ast(AST_NOOP);
@@ -213,8 +213,12 @@ AST_T* parser_parse_import_statement(parser_T* parser, scope_T* scope)
     parser_eat(parser, TOKEN_ID, "imp");
     char* pack_name = parser->current_token->value;
     parser_eat(parser, TOKEN_ID, "imp");
+    char* class_name = parser->current_token->value;
+    parser_eat(parser, TOKEN_ID, "imp");
     ast->import_statement_imp_name = calloc(strlen(pack_name) + 1, sizeof(char));
+    ast->import_statement_class_name = calloc(strlen(class_name) + 1, sizeof(char));
     strcpy(ast->import_statement_imp_name, pack_name);
+    strcpy(ast->import_statement_class_name, class_name);
     return ast;
 }
 
@@ -352,4 +356,20 @@ AST_T* parser_parse_id(parser_T* parser, scope_T* scope)
     {
         return parser_parse_variable(parser, scope);
     }
+}
+
+AST_T* parser_parse_true(parser_T* parser, scope_T* scope) {
+    AST_T* ast = init_ast(AST_TRUE);
+    
+    parser_eat(parser, TOKEN_TRUE, "true");
+
+    return ast;
+}
+
+AST_T* parser_parse_false(parser_T* parser, scope_T* scope) {
+    AST_T* ast = init_ast(AST_FALSE);
+    
+    parser_eat(parser, TOKEN_FALSE, "false");
+
+    return ast;
 }

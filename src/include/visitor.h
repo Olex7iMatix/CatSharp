@@ -17,6 +17,10 @@ AST_T* visitor_visit_if_statement(visitor_T* visitor, AST_T* node, struct SCOPE_
 
 AST_T* visitor_visit_else_statement(visitor_T* visitor, AST_T* node, struct SCOPE_STRUCT* scope);
 
+AST_T* visitor_visit_true(visitor_T* visitor, AST_T* node, struct SCOPE_STRUCT* scope);
+
+AST_T* visitor_visit_false(visitor_T* visitor, AST_T* node, struct SCOPE_STRUCT* scope);
+
 AST_T* visitor_visit_function_definition(visitor_T* visitor, AST_T* node, struct SCOPE_STRUCT* scope);
 
 AST_T* visitor_visit_variable(visitor_T* visitor, AST_T* node, struct SCOPE_STRUCT* scope);

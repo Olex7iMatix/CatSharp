@@ -87,6 +87,8 @@ int main(int argc, char** argv) {
         print_help();
     } else if (strcmp(argv[1], "pack_info") == 0) {
         return print_pack_info(argv[2]);
+    } else if (strcmp(argv[1], "compile") == 0) {
+        printf("Sorry but we don't have a compiler working : (\n");
     }
 
     return 0;
