@@ -17,7 +17,7 @@ int print_help() {
 int main(int argc, char** argv) {
     if (argc < 3) print_help();
 
-    if (strcmp(argv[1], "compile") == 0) {
+    if (strcmp(argv[1], "run") == 0) {
         lexer_T* lexer = init_lexer(get_file_content(argv[2]));
 
         parser_T* parser = init_parser(lexer);

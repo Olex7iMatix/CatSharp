@@ -1,10 +1,7 @@
 pack Life {
+    imp CatSharp;
     class People {
-        if (false) {
-            log("UwU");
-        }
-        else {
-            log("OwO");
-        };
+        LogInfo("UwU");
+        log("I don't like school!", "I hate my life");
     };
 };

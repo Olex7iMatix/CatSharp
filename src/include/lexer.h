@@ -21,6 +21,8 @@ token_T* lexer_get_next_token(lexer_T* lexer);
 
 token_T* lexer_comment(lexer_T* lexer);
 
+token_T* equals_check(lexer_T* lexer);
+
 token_T* lexer_collect_string(lexer_T* lexer);
 
 token_T* lexer_collect_id(lexer_T* lexer);

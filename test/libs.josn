@@ -1,5 +1,0 @@
-{
-    "libs": [
-        { package: "CatSharp", path: "CatSharp.cats" }
-    ]
-}

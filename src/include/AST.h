@@ -28,6 +28,10 @@ typedef struct AST_STRUCT {
     /* AST_VARIABLE */
     char* variable_name;
 
+    /* AST_TRUE */
+    int isTrue;
+    int isFalse;
+
     /* AST_FUNCTION_CALL */
     char* function_call_name;
     struct AST_STRUCT** function_call_arguments;
