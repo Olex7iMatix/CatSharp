@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
         parser_T* parser = init_parser(lexer);
         AST_T* root = parser_parse(parser, parser->scope);
         visitor_T* visitor = init_visitor();
-        visitor_visit(visitor, root);
+        visitor_visit(visitor, root, parser->scope);
     } else if (strcmp(argv[1], "help") == 0) {
         print_help();
     } else if (strcmp(argv[1], "pack_info") == 0) {
