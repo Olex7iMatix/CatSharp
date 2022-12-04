@@ -41,6 +41,7 @@ typedef struct AST_STRUCT {
     struct AST_STRUCT* operation_var;
     struct TOKEN_STRUCT* operation_operator;
     struct AST_STRUCT* operation_second_var;
+    int operation_isTrue;
     
     /* AST_FUNCTION_DEFINITION */
     struct AST_STRUCT* function_definition_body;

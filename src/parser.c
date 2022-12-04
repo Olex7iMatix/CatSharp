@@ -39,6 +39,12 @@ void parser_eat(parser_T* parser, int token_type, char* str)
     }
 }
 
+void parser_skip_token(parser_T* parser)
+{
+    parser->previous_token = parser->current_token;
+    parser->current_token = lexer_get_next_token(parser->lexer);
+}
+
 AST_T* parser_parse(parser_T* parser, scope_T* scope)
 {
     return parser_parse_statements(parser, scope);
@@ -48,6 +54,7 @@ AST_T* parser_parse_statement(parser_T* parser, scope_T* scope)
 {
     switch (parser->current_token->type)
     {
+        case TOKEN_COMMENT: return parser_parse_comment(parser, scope);
         case TOKEN_ID: return parser_parse_id(parser, scope);
     }
     
@@ -181,26 +188,33 @@ AST_T* parser_parse_function_call(parser_T* parser, scope_T* scope)
 
     function_call->function_call_name = parser->previous_token->value;
     
-    parser_eat(parser, TOKEN_LPAREN, "fcall LParen"); 
+    parser_eat(parser, TOKEN_LPAREN, "fcall LParen");
 
-    function_call->function_call_arguments = calloc(1, sizeof(struct AST_STRUCT*));
-
-    AST_T* ast_expr = parser_parse_expr(parser, scope);
-    function_call->function_call_arguments[0] = ast_expr;
-    function_call->function_call_arguments_size += 1;
-
-    while (parser->current_token->type == TOKEN_COMMA)
-    {
-        parser_eat(parser, TOKEN_COMMA, "fcall comma");
+    if (parser->current_token->type != TOKEN_RPAREN) {
+        function_call->function_call_arguments = calloc(1, sizeof(struct AST_STRUCT*));
 
         AST_T* ast_expr = parser_parse_expr(parser, scope);
+        function_call->function_call_arguments[0] = ast_expr;
         function_call->function_call_arguments_size += 1;
-        function_call->function_call_arguments = realloc(
-            function_call->function_call_arguments,
-            function_call->function_call_arguments_size * sizeof(struct AST_STRUCT*)
-        );
-        function_call->function_call_arguments[function_call->function_call_arguments_size-1] = ast_expr;
+
+        while (parser->current_token->type == TOKEN_COMMA)
+        {
+            parser_eat(parser, TOKEN_COMMA, "fcall comma");
+
+            AST_T* ast_expr = parser_parse_expr(parser, scope);
+            function_call->function_call_arguments_size += 1;
+            function_call->function_call_arguments = realloc(
+                function_call->function_call_arguments,
+                function_call->function_call_arguments_size * sizeof(struct AST_STRUCT*)
+            );
+            function_call->function_call_arguments[function_call->function_call_arguments_size-1] = ast_expr;
+        }
     }
+    else {
+        function_call->function_call_arguments = (void*)0;
+        function_call->function_call_arguments_size = 0;
+    }
+
     parser_eat(parser, TOKEN_RPAREN, "fcall RParen");
 
     function_call->scope = scope;
@@ -235,19 +249,25 @@ AST_T* parser_parse_function_definition(parser_T* parser, scope_T* scope)
     parser_eat(parser, TOKEN_ID, "fdef ID"); // void name
     parser_eat(parser, TOKEN_LPAREN, "fdef LPAREN");
 
-    ast->function_definition_args = calloc(1, sizeof(struct AST_STRUCT*));
-
-    AST_T* arg = parser_parse_variable(parser, scope);
-    ast->function_definition_args_size += 1;
-    ast->function_definition_args[ast->function_definition_args_size-1] = arg;
-
-    while (parser->current_token->type == TOKEN_COMMA) {
-        parser_eat(parser, TOKEN_COMMA, "fdef");
-        ast->function_definition_args_size += 1;
-        ast->function_definition_args = realloc(ast->function_definition_args, ast->function_definition_args_size * sizeof(struct AST_STRUCT*));
+    if (parser->current_token->type != TOKEN_RPAREN) {
+        ast->function_definition_args = calloc(1, sizeof(struct AST_STRUCT*));
 
         AST_T* arg = parser_parse_variable(parser, scope);
+        ast->function_definition_args_size += 1;
         ast->function_definition_args[ast->function_definition_args_size-1] = arg;
+
+        while (parser->current_token->type == TOKEN_COMMA) {
+            parser_eat(parser, TOKEN_COMMA, "fdef");
+            ast->function_definition_args_size += 1;
+            ast->function_definition_args = realloc(ast->function_definition_args, ast->function_definition_args_size * sizeof(struct AST_STRUCT*));
+
+            AST_T* arg = parser_parse_variable(parser, scope);
+            ast->function_definition_args[ast->function_definition_args_size-1] = arg;
+        }   
+    } else {
+        ast->function_definition_args = (void*) 0;
+        
+        ast->function_call_arguments_size = 0;
     }
 
     parser_eat(parser, TOKEN_RPAREN, "fdef RParen");
@@ -429,6 +449,14 @@ AST_T* parser_parse_id(parser_T* parser, scope_T* scope)
     {
         return parser_parse_variable(parser, scope);
     }
+}
+
+AST_T* parser_parse_comment(parser_T* parser, scope_T* scope) {
+    parser_eat(parser, TOKEN_COMMENT, "comment");
+    while (parser->current_token->type != TOKEN_SEMI) {
+        parser_skip_token(parser);
+    }
+    return init_ast(AST_NOOP);
 }
 
 AST_T* parser_parse_true(parser_T* parser, scope_T* scope) {

@@ -22,6 +22,7 @@ AST_T* init_ast(int type) {
     ast->operation_var = (void*) 0;
     ast->operation_operator = (void*) 0;
     ast->operation_second_var = (void*) 0;
+    ast->operation_isTrue = -1;
     
     /* AST_FUNCTION_DEFINITION */
     ast->function_definition_body = (void*) 0;

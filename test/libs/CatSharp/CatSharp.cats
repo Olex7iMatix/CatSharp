@@ -13,5 +13,13 @@ pack CatSharp {
             log("[ERROR]", msg);
         };
 
+        void logUwU(uwu) {
+            if (uwu == "UwU") {
+                log ("UwU");
+            } else {
+                log("Not UwU");
+            }
+        };
+
     };
 };

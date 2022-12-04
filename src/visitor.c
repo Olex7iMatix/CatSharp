@@ -246,6 +246,8 @@ AST_T* visitor_visit_function_call(visitor_T* visitor, AST_T* node, scope_T* sco
         exit (1);
     }
 
+    int count = 0;
+
     for (int i = 0; i < node->function_call_arguments_size; i++) {
         AST_T* ast_var = (AST_T*) fdef->function_definition_args[i];
         AST_T* ast_value = (AST_T*) node->function_call_arguments[i];
@@ -255,7 +257,14 @@ AST_T* visitor_visit_function_call(visitor_T* visitor, AST_T* node, scope_T* sco
         strcpy(var_def->variable_definition_variable_name, ast_var->variable_name);
         var_def->variable_definition_value = ast_value;
         
+        count += 1;
+
         scope_add_var_def(fdef->function_definition_body->scope, var_def);
+    }
+
+    if (fdef->function_call_arguments_size != count) {
+        printf("[Visitor]: Function you are trying to call have less or more arguments!\n");
+        exit(1);
     }
     
     return visitor_visit(visitor, fdef->function_definition_body, scope);

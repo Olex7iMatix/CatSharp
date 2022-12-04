@@ -1,11 +1,14 @@
 pack Example {
-    class Artur {
-        var int = 0;
+    imp CatSharp.Console;
+    class Test {
+        #
 
-        if (int == int) {
-            log("int == 0");
-        } else {
-            log("int != 0");
+        this is comment xD
+        
+        ;
+        var UwU = "UwU";
+        if (UwU == UwU) {
+            log("UwU");
         }
-    }
-}
+    };
+};
