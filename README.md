@@ -38,7 +38,7 @@ CatSharp = "<Your CatSharp path>"
 # CatSharp packages
 
 ## CatSharp
-This is an official package from CatSharp! If you don't want to copy code or download older/newer versions feel free to use (https://github.com/Olex7iMatix/CatLib "CatLib")
+This is an official package from CatSharp! If you don't want to copy code or download older/newer versions feel free to use [CatLib](https://github.com/Olex7iMatix/CatLib "CatLib")
 ### CatSharp.cats
 ```cats
 pack CatSharp {
