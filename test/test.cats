@@ -3,7 +3,7 @@ pack Example {
     class Artur {
         var xD = "";
         var xDD = "";
-        if (xD == "") {
+        if (xD == xD) {
             log("UwU");
         } else {
             log("Not UwU");
