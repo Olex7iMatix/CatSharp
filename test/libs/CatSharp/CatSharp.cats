@@ -11,7 +11,7 @@ pack CatSharp {
 
         void LogError(msg) {
             log("[ERROR]", msg);
-        }
+        };
 
     };
 };

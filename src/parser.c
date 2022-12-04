@@ -123,7 +123,19 @@ AST_T* parser_parse_if_expr(parser_T* parser, scope_T* scope)
                 }
                 break;
         }
-        AST_T* svast = parser_parse_id(parser, scope);
+        AST_T* svast = (void*) 0;
+        switch (parser->current_token->type)
+        {
+        case TOKEN_ID:
+            svast = parser_parse_id(parser, scope);
+            break;
+        case TOKEN_STRING:
+            svast = parser_parse_string(parser, scope);
+            break;
+        default:
+            printf("[Parser]: Unexpected token `%s`.\n", parser->current_token->value);
+            break;
+        }
         ast->operation_second_var = svast;
 
         return ast;

@@ -1,9 +1,8 @@
 pack Example {
     imp CatSharp.Console;
     class Artur {
-        var xD = "";
-        var xDD = "";
-        if (xD == xD) {
+        var xD = "test";
+        if (xD == "test") {
             log("UwU");
         } else {
             log("Not UwU");

@@ -113,7 +113,7 @@ AST_T* visitor_visit_if_statement(visitor_T* visitor, AST_T* node, scope_T* scop
                         return visitor_visit(visitor, node->if_else->else_body, scope);
                     }
                 } else {
-                    if ((var->variable_definition_value->string_value, svar_str) == 0) {
+                    if (strcmp(var->variable_definition_value->string_value, svar_str) == 0) {
                         return visitor_visit(visitor, node->if_body, scope);
                     } else {
                         return visitor_visit(visitor, node->if_else->else_body, scope);
