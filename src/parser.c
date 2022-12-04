@@ -1,4 +1,5 @@
 #include "include/parser.h"
+#include "include/token.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -90,6 +91,46 @@ AST_T* parser_parse_expr(parser_T* parser, scope_T* scope)
         case TOKEN_ID: return parser_parse_id(parser, scope);
         case TOKEN_TRUE: return parser_parse_true(parser, scope);
         case TOKEN_FALSE: return parser_parse_false(parser, scope);
+    }
+
+    return init_ast(AST_NOOP);
+}
+
+char parser_peek(parser_T* parser, int offset) {
+    return parser->lexer->content[parser->lexer->i + offset];
+}
+
+AST_T* parser_parse_if_expr(parser_T* parser, scope_T* scope)
+{
+    if (parser->current_token->type == TOKEN_ID) {
+        AST_T* vast = parser_parse_id(parser, scope);
+        AST_T* ast = init_ast(AST_OPERATION);
+        ast->operation_var = vast;
+        switch (parser->current_token->type) {
+            case TOKEN_LT:
+                ast->operation_operator = parser->current_token; parser_eat(parser, TOKEN_LT, "parser_parse_if_expr"); break;
+            case TOKEN_GT:
+                ast->operation_operator = parser->current_token; parser_eat(parser, TOKEN_GT, "parser_parse_if_expr"); break;
+            case TOKEN_EQUALS:
+                parser_eat(parser, TOKEN_EQUALS, "uwu");
+                token_T* tok = parser->current_token;
+                if (tok->type == TOKEN_EQUALS) {
+                    ast->operation_operator = init_token(TOKEN_EQUALS, "==");
+                    parser_eat(parser, TOKEN_EQUALS, "parser_parse_if_expr");
+                } else {
+                    printf("[Parser]: Expected '==' but found '=%s'\n", tok->value);
+                    exit(1);
+                }
+                break;
+        }
+        AST_T* svast = parser_parse_id(parser, scope);
+        ast->operation_second_var = svast;
+
+        return ast;
+    } else if (parser->current_token->type == TOKEN_TRUE) {
+        return init_ast(TOKEN_TRUE);
+    } else if (parser->current_token->type == TOKEN_FALSE) {
+        return init_ast(TOKEN_FALSE);
     }
 
     return init_ast(AST_NOOP);
@@ -213,6 +254,7 @@ AST_T* parser_parse_import_statement(parser_T* parser, scope_T* scope)
     parser_eat(parser, TOKEN_ID, "imp");
     char* pack_name = parser->current_token->value;
     parser_eat(parser, TOKEN_ID, "imp");
+    parser_eat(parser, TOKEN_DOT, "imp");
     char* class_name = parser->current_token->value;
     parser_eat(parser, TOKEN_ID, "imp");
     ast->import_statement_imp_name = calloc(strlen(pack_name) + 1, sizeof(char));
@@ -227,7 +269,7 @@ AST_T* parser_parse_if_statement(parser_T* parser, scope_T* scope)
     AST_T* ast = init_ast(AST_IF_STATEMENT);
     parser_eat(parser, TOKEN_ID, "if"); // if
     parser_eat(parser, TOKEN_LPAREN, "if");
-    AST_T* ast_expr = parser_parse_expr(parser, scope);
+    AST_T* ast_expr = parser_parse_if_expr(parser, scope);
     ast->if_arg = ast_expr;
     parser_eat(parser, TOKEN_RPAREN, "if");
     parser_eat(parser, TOKEN_LBRACE, "if");

@@ -21,6 +21,10 @@ AST_T* parser_parse_statement(parser_T* parser, scope_T* scope);
 
 AST_T* parser_parse_statements(parser_T* parser, scope_T* scope);
 
+char parser_peek(parser_T* parser, int token_type);
+
+AST_T* parser_parse_if_expr(parser_T* parser, scope_T* scope);
+
 AST_T* parser_parse_expr(parser_T* parser, scope_T* scope);
 
 AST_T* parser_parse_factor(parser_T* parser, scope_T* scope);

@@ -18,6 +18,7 @@ typedef struct AST_STRUCT {
         AST_STRING,
         AST_INT,
         AST_FUNCTION_CALL,
+        AST_OPERATION,
         AST_NOOP,
         AST_COMPOUND,
     } type;
@@ -35,6 +36,11 @@ typedef struct AST_STRUCT {
     char* function_call_name;
     struct AST_STRUCT** function_call_arguments;
     size_t function_call_arguments_size;
+
+    /* AST_OPERATION */
+    struct AST_STRUCT* operation_var;
+    struct TOKEN_STRUCT* operation_operator;
+    struct AST_STRUCT* operation_second_var;
     
     /* AST_FUNCTION_DEFINITION */
     struct AST_STRUCT* function_definition_body;

@@ -6,7 +6,6 @@ typedef struct TOKEN_STRUCT {
         TOKEN_ID,
         TOKEN_COMMENT,
         TOKEN_EQUALS,
-        TOKEN_D_EQUALS,
         TOKEN_STRING,
         TOKEN_INT,
         TOKEN_TRUE,
@@ -18,6 +17,8 @@ typedef struct TOKEN_STRUCT {
         TOKEN_RPAREN,
         TOKEN_LBRACE,
         TOKEN_RBRACE,
+        TOKEN_LT,
+        TOKEN_GT,
         TOKEN_EOF
     } type;
 

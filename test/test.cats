@@ -1,10 +1,11 @@
-pack Test {
-    class UwU {
-        var UwU = "OwO lubie koty xDDDDD";
-        if (true) {
-            log(UwU);
+pack Example {
+    imp CatSharp.Console;
+    class Artur {
+        var xD = "";
+        if (xD == "") {
+            log("UwU");
         } else {
-            log("OwO");
-        };
-    };
-};
+            log("Not UwU");
+        }
+    }
+}

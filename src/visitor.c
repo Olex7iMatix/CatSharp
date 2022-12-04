@@ -38,6 +38,7 @@ AST_T* visitor_visit(visitor_T* visitor, AST_T* node, scope_T* scope) {
         case AST_VARIABLE_DEFINITION: return visitor_visit_variable_definition(visitor, node, scope); break;
         case AST_VARIABLE: return visitor_visit_variable(visitor, node, scope); break;
         case AST_FUNCTION_CALL: return visitor_visit_function_call(visitor, node, scope); break;
+        case AST_OPERATION: return node; break;
         case AST_FUNCTION_DEFINITION: return visitor_visit_function_definition(visitor, node, scope); break;
         case AST_PACK_DEFINITION: return visitor_visit_pack(visitor, node, scope); break;
         case AST_CLASS_DEFINITION: return visitor_visit_class(visitor, node, scope); break;
@@ -58,6 +59,10 @@ AST_T* visitor_visit(visitor_T* visitor, AST_T* node, scope_T* scope) {
 }
 
 AST_T* visitor_visit_if_statement(visitor_T* visitor, AST_T* node, scope_T* scope) {
+    AST_T* var = (void*) 0;
+    char* var_str = (void*) 0;
+    AST_T* svar = (void*) 0;
+    char* svar_str = (void*) 0;
     switch (node->if_arg->type)
     {
     case 9:
@@ -65,6 +70,80 @@ AST_T* visitor_visit_if_statement(visitor_T* visitor, AST_T* node, scope_T* scop
         break;
     case 10:
         return visitor_visit(visitor, node->if_else->else_body, scope);
+        break;
+    case AST_OPERATION:
+        switch (node->if_arg->operation_operator->type)
+        {
+        case TOKEN_EQUALS:
+            switch (node->if_arg->operation_var->type)
+            {
+            case AST_VARIABLE:
+                var = scope_get_var_def(node->scope, node->if_arg->operation_var->variable_name);
+                if (var == (void*) 0) {
+                    printf("[Visitor]: Cannot find variable '%s'\n", node->if_arg->operation_var->variable_name);
+                    exit(1);
+                }
+                break;
+            case AST_STRING:
+                var_str = node->if_arg->operation_var->string_value;
+                break;
+            default:
+                break;
+            }
+            switch (node->if_arg->operation_second_var->type)
+            {
+            case AST_VARIABLE:
+                svar = scope_get_var_def(node->scope, node->if_arg->operation_second_var->variable_name);
+                if (var == (void*) 0) {
+                    printf("[Visitor]: Cannot find variable '%s'\n", node->if_arg->operation_second_var->variable_name);
+                    exit(1);
+                }
+                break;
+            case AST_STRING:
+                svar_str = node->if_arg->operation_second_var->string_value;
+                break;
+            default:
+                break;
+            }
+            if (var != (void*) 0) {
+                if (svar != (void*) 0) {
+                    if (var->variable_definition_value == svar->variable_definition_value) {
+                        return visitor_visit(visitor, node->if_body, scope);
+                    } else {
+                        return visitor_visit(visitor, node->if_else->else_body, scope);
+                    }
+                } else {
+                    if (var->variable_definition_value->string_value == svar_str) {
+                        return visitor_visit(visitor, node->if_body, scope);
+                    } else {
+                        return visitor_visit(visitor, node->if_else->else_body, scope);
+                    }
+                }
+            }
+            break;
+        default:
+            printf("[Visitor]: Unexpected operation.");
+            exit(1);
+        }
+        break;
+    case 1:
+        var = scope_get_var_def(node->scope, node->if_arg->variable_name);
+
+        if (var == (void*) 0) {
+            printf("[Error]: Cannot find variable!\n");
+            exit(1);
+        }
+
+        switch (var->type) {
+            case 9:
+                return visitor_visit(visitor, node->if_body, scope);
+                break;
+            case 10:
+                return visitor_visit(visitor, node->if_else->else_body, scope);
+                break;
+            default:
+                break;
+        }
         break;
     default:
         break;
