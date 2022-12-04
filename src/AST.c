@@ -52,7 +52,7 @@ AST_T* init_ast(int type) {
     ast->string_value = (void*) 0;
     
     /* AST_INT */
-    ast->int_value = 0;
+    ast->int_value = -1;
 
     /* AST_COMPOUND */
     ast->compound_value = (void*) 0;

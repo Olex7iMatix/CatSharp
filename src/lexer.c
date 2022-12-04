@@ -95,15 +95,13 @@ token_T* lexer_collect_int(lexer_T* lexer) {
     char* value = calloc(1, sizeof(char));
     value[0] = '\0';
 
-    while (isdigit(lexer->c)) {
+    while (isalnum(lexer->c) ) {
         char* s = lexer_get_current_char_as_string(lexer);
         value = realloc(value, (strlen(value) + strlen(s) + 1) * sizeof(char));
         strcat(value, s);
 
         lexer_advance(lexer);
     }
-
-    lexer_advance(lexer);
 
     return init_token(TOKEN_INT, value);
 }

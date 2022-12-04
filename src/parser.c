@@ -1,5 +1,6 @@
 #include "include/parser.h"
 #include "include/token.h"
+#include "include/types.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -103,7 +104,22 @@ char parser_peek(parser_T* parser, int offset) {
 AST_T* parser_parse_if_expr(parser_T* parser, scope_T* scope)
 {
     if (parser->current_token->type == TOKEN_ID) {
-        AST_T* vast = parser_parse_id(parser, scope);
+        AST_T* vast;
+        switch (parser->current_token->type)
+        {
+        case TOKEN_ID:
+            vast = parser_parse_id(parser, scope);
+            break;
+        case TOKEN_STRING:
+            vast = parser_parse_string(parser, scope);
+            break;
+        case TOKEN_INT:
+            vast = parser_parse_int(parser, scope);
+            break;
+        default:
+            printf("[Parser]: Unexpected token `%s`.\n", parser->current_token->value);
+            break;
+        }
         AST_T* ast = init_ast(AST_OPERATION);
         ast->operation_var = vast;
         switch (parser->current_token->type) {
@@ -131,6 +147,9 @@ AST_T* parser_parse_if_expr(parser_T* parser, scope_T* scope)
             break;
         case TOKEN_STRING:
             svast = parser_parse_string(parser, scope);
+            break;
+        case TOKEN_INT:
+            svast = parser_parse_int(parser, scope);
             break;
         default:
             printf("[Parser]: Unexpected token `%s`.\n", parser->current_token->value);
