@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <string.h>
 
+// #include <SDL2/SDL.h>
+
 static AST_T* builtin_function_log(visitor_T* visitor, AST_T** args, int args_size, scope_T* scope) {
     for (int i = 0; i < args_size; i++) {
         AST_T* visited_ast = visitor_visit(visitor, args[i], scope);
@@ -38,15 +40,17 @@ AST_T* visitor_visit(visitor_T* visitor, AST_T* node, scope_T* scope) {
         case AST_VARIABLE_DEFINITION: return visitor_visit_variable_definition(visitor, node, scope); break;
         case AST_VARIABLE: return visitor_visit_variable(visitor, node, scope); break;
         case AST_FUNCTION_CALL: return visitor_visit_function_call(visitor, node, scope); break;
-        case AST_OPERATION: return node; break;
+        case AST_OPERATION: return visitor_visit_operation(visitor, node, scope); break;
         case AST_FUNCTION_DEFINITION: return visitor_visit_function_definition(visitor, node, scope); break;
         case AST_PACK_DEFINITION: return visitor_visit_pack(visitor, node, scope); break;
         case AST_CLASS_DEFINITION: return visitor_visit_class(visitor, node, scope); break;
         case AST_IMPORT_STATEMENT: return visitor_visit_import_statement(visitor, node, scope); break;
         case AST_IF_STATEMENT: return visitor_visit_if_statement(visitor, node, scope); break;
         case AST_ELSE_STATEMENT: return visitor_visit_else_statement(visitor, node, scope); break;
+        case AST_WHILE_STATEMENT: return visitor_visit_while_statement(visitor, node, scope); break;
         case AST_TRUE: return visitor_visit_true(visitor, node, scope); break;
         case AST_FALSE: return visitor_visit_false(visitor, node, scope); break;
+        case AST_BREAK: return visitor_visit_break(visitor, node, scope); break;
         case AST_STRING: return visitor_visit_string(visitor, node, scope); break;
         case AST_COMPOUND: return visitor_visit_compound(visitor, node, scope); break;
         case AST_NOOP: return node; break;
@@ -56,6 +60,10 @@ AST_T* visitor_visit(visitor_T* visitor, AST_T* node, scope_T* scope) {
     exit(1);
 
     return init_ast(AST_NOOP);
+}
+
+AST_T* visitor_visit_operation(visitor_T* visitor, AST_T* node, scope_T* scope) {
+    return node;
 }
 
 AST_T* visitor_visit_if_statement(visitor_T* visitor, AST_T* node, scope_T* scope) {
@@ -155,11 +163,41 @@ AST_T* visitor_visit_else_statement(visitor_T* visitor, AST_T* node, scope_T* sc
     return node;
 }
 
+AST_T* visitor_visit_while_statement(visitor_T* visitor, AST_T* node, scope_T* scope) {
+    AST_T* ast = (void*)0;
+
+    switch (node->while_arg->type)
+    {
+    case AST_TRUE:
+        while (1) {
+            if (node->while_isBroken == 0) ast = visitor_visit(visitor, node->while_body, node->scope);
+            else break;
+        }
+        break;
+    }
+
+    if (ast == (void*)0) {
+        return node;
+    }
+
+    return ast;
+}
+
 AST_T* visitor_visit_true(visitor_T* visitor, AST_T* node, scope_T* scope) {
     return node;
 }
 
 AST_T* visitor_visit_false(visitor_T* visitor, AST_T* node, scope_T* scope) {
+    return node;
+}
+
+AST_T* visitor_visit_break(visitor_T* visitor, AST_T* node, scope_T* scope) {
+    if (node->while_body = (void*) 0) {
+        printf("[Visitor]: Cannot use `break` outside while statement.\n");
+        exit(1);
+    }
+    node->while_isBroken = 1;
+
     return node;
 }
 

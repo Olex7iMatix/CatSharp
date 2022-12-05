@@ -13,6 +13,8 @@ typedef struct AST_STRUCT {
         AST_IMPORT_STATEMENT,
         AST_IF_STATEMENT,
         AST_ELSE_STATEMENT,
+        AST_WHILE_STATEMENT,
+        AST_BREAK,
         AST_TRUE,
         AST_FALSE,
         AST_STRING,
@@ -41,7 +43,7 @@ typedef struct AST_STRUCT {
     struct AST_STRUCT* operation_var;
     struct TOKEN_STRUCT* operation_operator;
     struct AST_STRUCT* operation_second_var;
-    int operation_isTrue;
+    struct AST_STRUCT* operation_result;
     
     /* AST_FUNCTION_DEFINITION */
     struct AST_STRUCT* function_definition_body;
@@ -53,6 +55,11 @@ typedef struct AST_STRUCT {
     struct AST_STRUCT* if_body;
     struct AST_STRUCT* if_arg;
     struct AST_STRUCT* if_else;
+
+    /* AST_WHILE_STATEMENT */
+    struct AST_STRUCT* while_body;
+    struct AST_STRUCT* while_arg;
+    int while_isBroken;
     
     /* AST_ELSE_STATEMENT */
     struct AST_STRUCT* else_body;

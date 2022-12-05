@@ -8,6 +8,7 @@ typedef struct TOKEN_STRUCT {
         TOKEN_EQUALS,
         TOKEN_STRING,
         TOKEN_INT,
+        TOKEN_BREAK,
         TOKEN_TRUE,
         TOKEN_FALSE,
         TOKEN_SEMI,

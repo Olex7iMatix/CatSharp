@@ -1,14 +1,17 @@
 pack Example {
-    imp CatSharp.Console;
     class Test {
-        #
+        var uwu = "xD";
+        while (true) {
+            #
 
-        this is comment xD
-        
-        ;
-        var UwU = "UwU";
-        if (UwU == UwU) {
-            log("UwU");
-        }
+            If uwu == "uwu" then stop the program
+
+            ;
+            if (uwu == "uwu") {
+                break;
+            } else {
+                log("UwU");
+            }
+        };
     };
 };

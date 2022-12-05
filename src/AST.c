@@ -22,7 +22,7 @@ AST_T* init_ast(int type) {
     ast->operation_var = (void*) 0;
     ast->operation_operator = (void*) 0;
     ast->operation_second_var = (void*) 0;
-    ast->operation_isTrue = -1;
+    ast->operation_result = (void*) 0;
     
     /* AST_FUNCTION_DEFINITION */
     ast->function_definition_body = (void*) 0;
@@ -37,6 +37,11 @@ AST_T* init_ast(int type) {
     
     /* AST_ELSE_STATEMENT */
     ast->else_body = (void*) 0;
+    
+    /* AST_WHILE_STATEMENT */
+    ast->while_body = (void*) 0;
+    ast->while_arg = (void*) 0;
+    ast->while_isBroken = 0;
 
     /* AST_PACK_DEFINITION */
     ast->pack_definition_body = (void*) 0;

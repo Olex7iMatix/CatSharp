@@ -108,7 +108,24 @@ char parser_peek(parser_T* parser, int offset) {
     return parser->lexer->content[parser->lexer->i + offset];
 }
 
-AST_T* parser_parse_if_expr(parser_T* parser, scope_T* scope)
+AST_T* parser_parse_while_expr(parser_T* parser, scope_T* scope) {
+    switch (parser->current_token->type)
+    {
+    case TOKEN_TRUE:
+        parser_eat(parser, TOKEN_TRUE, "UwU");
+        return init_ast(AST_TRUE);
+    case TOKEN_FALSE:
+        parser_eat(parser, TOKEN_FALSE, "UwU");
+        return init_ast(AST_FALSE);
+    // case TOKEN_TRUE:
+    //     parser_eat(parser, TOKEN_TRUE, "UwU");
+    //     return init_ast(AST_TRUE);
+    default:
+        return parser_parse_op_expr(parser, scope);
+    }
+}
+
+AST_T* parser_parse_op_expr(parser_T* parser, scope_T* scope)
 {
     if (parser->current_token->type == TOKEN_ID) {
         AST_T* vast;
@@ -131,15 +148,15 @@ AST_T* parser_parse_if_expr(parser_T* parser, scope_T* scope)
         ast->operation_var = vast;
         switch (parser->current_token->type) {
             case TOKEN_LT:
-                ast->operation_operator = parser->current_token; parser_eat(parser, TOKEN_LT, "parser_parse_if_expr"); break;
+                ast->operation_operator = parser->current_token; parser_eat(parser, TOKEN_LT, "parser_parse_op_expr"); break;
             case TOKEN_GT:
-                ast->operation_operator = parser->current_token; parser_eat(parser, TOKEN_GT, "parser_parse_if_expr"); break;
+                ast->operation_operator = parser->current_token; parser_eat(parser, TOKEN_GT, "parser_parse_op_expr"); break;
             case TOKEN_EQUALS:
                 parser_eat(parser, TOKEN_EQUALS, "uwu");
                 token_T* tok = parser->current_token;
                 if (tok->type == TOKEN_EQUALS) {
                     ast->operation_operator = init_token(TOKEN_EQUALS, "==");
-                    parser_eat(parser, TOKEN_EQUALS, "parser_parse_if_expr");
+                    parser_eat(parser, TOKEN_EQUALS, "parser_parse_op_expr");
                 } else {
                     printf("[Parser]: Expected '==' but found '=%s'\n", tok->value);
                     exit(1);
@@ -320,12 +337,37 @@ AST_T* parser_parse_if_statement(parser_T* parser, scope_T* scope)
     AST_T* ast = init_ast(AST_IF_STATEMENT);
     parser_eat(parser, TOKEN_ID, "if"); // if
     parser_eat(parser, TOKEN_LPAREN, "if");
-    AST_T* ast_expr = parser_parse_if_expr(parser, scope);
+    AST_T* ast_expr = parser_parse_op_expr(parser, scope);
     ast->if_arg = ast_expr;
     parser_eat(parser, TOKEN_RPAREN, "if");
     parser_eat(parser, TOKEN_LBRACE, "if");
 
     ast->if_body = parser_parse_statements(parser, scope);
+    ast->scope = scope;
+
+    parser_eat(parser, TOKEN_RBRACE, "if");
+
+    if (parser->current_token->type == TOKEN_ID) {
+        if (strcmp (parser->current_token->value, "else") == 0) {
+            parser_parse_else_statement(parser, scope, ast);
+            return ast;
+        }
+    }
+
+    return ast;
+}
+
+AST_T* parser_parse_while_statement(parser_T* parser, scope_T* scope)
+{
+    AST_T* ast = init_ast(AST_WHILE_STATEMENT);
+    parser_eat(parser, TOKEN_ID, "if"); // if
+    parser_eat(parser, TOKEN_LPAREN, "if");
+    AST_T* ast_expr = parser_parse_while_expr(parser, scope);
+    ast->while_arg = ast_expr;
+    parser_eat(parser, TOKEN_RPAREN, "if");
+    parser_eat(parser, TOKEN_LBRACE, "if");
+
+    ast->while_body = parser_parse_statements(parser, scope);
     ast->scope = scope;
 
     parser_eat(parser, TOKEN_RBRACE, "if");
@@ -419,6 +461,13 @@ AST_T* parser_parse_int(parser_T* parser, scope_T* scope)
     return ast_int;
 }
 
+AST_T* parser_parse_break_keyword(parser_T* parser, scope_T* scope)
+{
+    AST_T* ast = init_ast(AST_BREAK);
+    parser_eat(parser, TOKEN_BREAK, "break");
+    return ast;
+}
+
 AST_T* parser_parse_id(parser_T* parser, scope_T* scope)
 {
     if (strcmp(parser->current_token->value, "var") == 0)
@@ -445,6 +494,14 @@ AST_T* parser_parse_id(parser_T* parser, scope_T* scope)
     {
         return parser_parse_if_statement(parser, scope);
     }
+    else if (strcmp(parser->current_token->value, "while") == 0)
+    {
+        return parser_parse_while_statement(parser, scope);
+    }
+    else if (strcmp(parser->current_token->value, "break") == 0)
+    {
+        return parser_parse_break_keyword(parser, scope);
+    }
     else
     {
         return parser_parse_variable(parser, scope);
@@ -461,16 +518,12 @@ AST_T* parser_parse_comment(parser_T* parser, scope_T* scope) {
 
 AST_T* parser_parse_true(parser_T* parser, scope_T* scope) {
     AST_T* ast = init_ast(AST_TRUE);
-    
     parser_eat(parser, TOKEN_TRUE, "true");
-
     return ast;
 }
 
 AST_T* parser_parse_false(parser_T* parser, scope_T* scope) {
     AST_T* ast = init_ast(AST_FALSE);
-    
     parser_eat(parser, TOKEN_FALSE, "false");
-
     return ast;
 }
