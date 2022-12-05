@@ -29,7 +29,13 @@ AST_T* visitor_visit_false(visitor_T* visitor, AST_T* node, struct SCOPE_STRUCT*
 
 AST_T* visitor_visit_break(visitor_T* visitor, AST_T* node, struct SCOPE_STRUCT* scope);
 
+AST_T* visitor_visit_return(visitor_T* visitor, AST_T* node, struct SCOPE_STRUCT* scope);
+
 AST_T* visitor_visit_function_definition(visitor_T* visitor, AST_T* node, struct SCOPE_STRUCT* scope);
+
+AST_T* visitor_visit_var_function_definition(visitor_T* visitor, AST_T* node, struct SCOPE_STRUCT* scope);
+
+AST_T* visitor_visit_var_function_call(visitor_T* visitor, AST_T* node, struct SCOPE_STRUCT* scope);
 
 AST_T* visitor_visit_variable(visitor_T* visitor, AST_T* node, struct SCOPE_STRUCT* scope);
 

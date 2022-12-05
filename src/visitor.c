@@ -8,8 +8,6 @@
 #include <stdio.h>
 #include <string.h>
 
-// #include <SDL2/SDL.h>
-
 static AST_T* builtin_function_log(visitor_T* visitor, AST_T** args, int args_size, scope_T* scope) {
     for (int i = 0; i < args_size; i++) {
         AST_T* visited_ast = visitor_visit(visitor, args[i], scope);
@@ -28,6 +26,31 @@ static AST_T* builtin_function_log(visitor_T* visitor, AST_T** args, int args_si
     return init_ast(AST_NOOP);
 }
 
+#include "include/io.h"
+
+static AST_T* builtin_function_writeToFile(visitor_T* visitor, AST_T** args, int args_size, scope_T* scope) {
+    if (args_size != 2) {
+        printf("[Visitor]: Function `writeToFile` have more/less arguments.");
+        exit(1);
+    }
+
+    char* filename = args[0]->string_value;
+    if (filename == (void*) 0) {
+        printf("[Visitor]: Argument 0 in function `writeToFile` have to be a string.");
+        exit(1);
+    }
+
+    char* content = args[1]->string_value;
+    if (content == (void*) 0) {
+        printf("[Visitor]: Argument 1 in function `writeToFile` have to be a string.");
+        exit(1);
+    }
+
+    writeToFile(filename, content);
+
+    return init_ast(AST_NOOP);
+}
+
 visitor_T* init_visitor() {
     visitor_T* visitor = calloc(1, sizeof(struct VISITOR_STRUCT));
 
@@ -42,6 +65,7 @@ AST_T* visitor_visit(visitor_T* visitor, AST_T* node, scope_T* scope) {
         case AST_FUNCTION_CALL: return visitor_visit_function_call(visitor, node, scope); break;
         case AST_OPERATION: return visitor_visit_operation(visitor, node, scope); break;
         case AST_FUNCTION_DEFINITION: return visitor_visit_function_definition(visitor, node, scope); break;
+        case AST_VARIABLE_FUNCTION_DEFINITION: return visitor_visit_var_function_definition(visitor, node, scope); break;
         case AST_PACK_DEFINITION: return visitor_visit_pack(visitor, node, scope); break;
         case AST_CLASS_DEFINITION: return visitor_visit_class(visitor, node, scope); break;
         case AST_IMPORT_STATEMENT: return visitor_visit_import_statement(visitor, node, scope); break;
@@ -51,6 +75,7 @@ AST_T* visitor_visit(visitor_T* visitor, AST_T* node, scope_T* scope) {
         case AST_TRUE: return visitor_visit_true(visitor, node, scope); break;
         case AST_FALSE: return visitor_visit_false(visitor, node, scope); break;
         case AST_BREAK: return visitor_visit_break(visitor, node, scope); break;
+        case AST_RETURN: return visitor_visit_return(visitor, node, scope); break;
         case AST_STRING: return visitor_visit_string(visitor, node, scope); break;
         case AST_COMPOUND: return visitor_visit_compound(visitor, node, scope); break;
         case AST_NOOP: return node; break;
@@ -201,6 +226,17 @@ AST_T* visitor_visit_break(visitor_T* visitor, AST_T* node, scope_T* scope) {
     return node;
 }
 
+AST_T* visitor_visit_return(visitor_T* visitor, AST_T* node, scope_T* scope) {
+    if (node->var_function_definition_body = (void*) 0) {
+        printf("[Visitor]: Cannot use `return` outside variable function definition.\n");
+        exit(1);
+    }
+
+    node->var_function_definition_return_variable = node->return_value;
+
+    return node;
+}
+
 #include "include/toml.h"
 
 AST_T* visitor_visit_import_statement(visitor_T* visitor, AST_T* node, scope_T* scope) {
@@ -261,6 +297,23 @@ AST_T* visitor_visit_function_definition(visitor_T* visitor, AST_T* node, scope_
     return node;
 }
 
+AST_T* visitor_visit_var_function_definition(visitor_T* visitor, AST_T* node, scope_T* scope) {
+    AST_T* var = node->var_function_definition_body;
+    AST_T* ast = visitor_visit(visitor, var, scope);
+
+    if (ast->var_function_definition_return_variable == (void*)0) {
+        printf("[Visitor]: Variable function should have `return` statement.\n");
+        exit(1);
+    }
+
+    AST_T* return_val = init_ast(AST_STRING);
+    return_val->string_value = ast->var_function_definition_return_variable->string_value;
+
+    scope_add_var_def(scope, return_val);
+
+    return node;
+}
+
 AST_T* visitor_visit_variable(visitor_T* visitor, AST_T* node, scope_T* scope) {
     AST_T* vdef = scope_get_var_def(node->scope, node->variable_name);
     
@@ -275,6 +328,9 @@ AST_T* visitor_visit_function_call(visitor_T* visitor, AST_T* node, scope_T* sco
     if (strcmp(node->function_call_name, "log") == 0)
     {
         return builtin_function_log(visitor, node->function_call_arguments, node->function_call_arguments_size, scope);
+    } else if (strcmp(node->function_call_name, "writeToFile") == 0)
+    {
+        return builtin_function_writeToFile(visitor, node->function_call_arguments, node->function_call_arguments_size, scope);
     }
 
     AST_T* fdef = scope_get_function_def(node->scope, node->function_call_name);

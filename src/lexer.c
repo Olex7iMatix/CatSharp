@@ -122,6 +122,8 @@ token_T* lexer_collect_id(lexer_T* lexer) {
         return init_token(TOKEN_TRUE, value);
     } else if (strcmp(value, "false") == 0) {
         return init_token(TOKEN_FALSE, value);
+    }else if (strcmp(value, "return") == 0) {
+        return init_token(TOKEN_RETURN, value);
     }
 
     return init_token(TOKEN_ID, value);

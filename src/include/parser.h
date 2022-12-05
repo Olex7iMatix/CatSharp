@@ -61,6 +61,8 @@ AST_T* parser_parse_id(parser_T* parser, scope_T* scope);
 
 AST_T* parser_parse_comment(parser_T* parser, scope_T* scope);
 
+AST_T* parser_parse_return(parser_T* parser, scope_T* scope);
+
 AST_T* parser_parse_true(parser_T* parser, scope_T* scope);
 
 AST_T* parser_parse_false(parser_T* parser, scope_T* scope);

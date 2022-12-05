@@ -7,6 +7,8 @@ scope_T* init_scope() {
     scope->function_definitions_size = 0;
     scope->variable_definitions = (void*) 0;
     scope->variable_definitions_size = 0;
+    scope->var_function_definitions = (void*) 0;
+    scope->var_function_definitions_size = 0;
     scope->additional_scopes = (void*) 0;
     scope->scope_name = (void*) 0;
 
@@ -75,6 +77,41 @@ AST_T* scope_get_var_def(scope_T* scope, const char* name) {
         AST_T* ast = scope_get_var_def(_scope, name);
 
         if (ast != (void*) 0) return ast; 
+    }
+
+    return (void*) 0;
+}
+
+AST_T* scope_add_var_function_def(scope_T* scope, AST_T* vdef) {
+    if (scope->var_function_definitions == (void*) 0) {
+        scope->var_function_definitions = calloc(1, sizeof(struct AST_STRUCT));
+        scope->var_function_definitions[0] = vdef;
+        scope->var_function_definitions_size += 1;
+    } else {
+        scope->var_function_definitions_size += 1;
+        scope->var_function_definitions = realloc(
+            scope->var_function_definitions,
+            scope->var_function_definitions_size * sizeof(struct AST_STRUCT*)
+        );
+        scope->var_function_definitions[scope->var_function_definitions_size-1] = vdef;
+    }
+
+    return vdef;
+}
+
+AST_T* scope_get_var_function_def(scope_T* scope, const char* name) {
+    for (int i = 0; i < scope->var_function_definitions_size; i++) {
+        AST_T* def = scope->var_function_definitions[i];
+
+        if (strcmp(def->variable_definition_variable_name, name) == 0) return def;
+    }
+
+    for (int i = 0; i < scope->additional_scopes_size; i++) {
+        scope_T* _scope = scope->additional_scopes[i];
+
+        AST_T* ast = scope_get_var_function_def(_scope, name);
+
+        if (ast != (void*) 0) return ast;
     }
 
     return (void*) 0;

@@ -26,3 +26,17 @@ char* get_file_content(const char* filename) {
     if (line) free(line);
     return buffer;
 }
+
+void writeToFile(char* filename, const char* content) {
+    FILE* fp;
+
+    fp = fopen(filename, "wb");
+    if (fp == NULL) {
+        printf("Could not open file `%s` to write.\n", filename);
+        exit(1);
+    }
+
+    fputs(content, fp);
+
+    fclose(fp);
+}

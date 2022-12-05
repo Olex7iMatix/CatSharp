@@ -5,6 +5,7 @@
 typedef struct AST_STRUCT {
     enum {
         AST_VARIABLE_DEFINITION,
+        AST_VARIABLE_FUNCTION_DEFINITION,
         AST_VARIABLE,
         AST_FUNCTION_DEFINITION,
         AST_PACK_DEFINITION,
@@ -15,6 +16,7 @@ typedef struct AST_STRUCT {
         AST_ELSE_STATEMENT,
         AST_WHILE_STATEMENT,
         AST_BREAK,
+        AST_RETURN,
         AST_TRUE,
         AST_FALSE,
         AST_STRING,
@@ -50,11 +52,21 @@ typedef struct AST_STRUCT {
     char* function_definition_name;
     struct AST_STRUCT** function_definition_args;
     size_t function_definition_args_size;
+
+    /* AST_VARIABLE_FUNCTION_DEFINITION */
+    struct AST_STRUCT* var_function_definition_body;
+    char* var_function_definition_name;
+    struct AST_STRUCT** var_function_definition_args;
+    size_t var_function_definition_args_size;
+    struct AST_STRUCT* var_function_definition_return_variable;
     
     /* AST_IF_STATEMENT */
     struct AST_STRUCT* if_body;
     struct AST_STRUCT* if_arg;
     struct AST_STRUCT* if_else;
+
+    /* AST_RETURN */
+    struct AST_STRUCT* return_value;
 
     /* AST_WHILE_STATEMENT */
     struct AST_STRUCT* while_body;

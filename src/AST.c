@@ -30,10 +30,20 @@ AST_T* init_ast(int type) {
     ast->function_definition_args = (void*) 0;
     ast->function_definition_args_size = 0;
     
+    /* AST_VARIABLE_FUNCTION_DEFINITION */
+    ast->var_function_definition_body = (void*) 0;
+    ast->var_function_definition_name = (void*) 0;
+    ast->var_function_definition_args = (void*) 0;
+    ast->var_function_definition_args_size = 0;
+    ast->var_function_definition_return_variable = (void*) 0;
+
     /* AST_IF_STATEMENT */
     ast->if_body = (void*) 0;
     ast->if_arg = (void*) 0;
     ast->if_else = (void*) 0;
+
+    /* AST_RETURN */
+    ast->return_value = (void*) 0;
     
     /* AST_ELSE_STATEMENT */
     ast->else_body = (void*) 0;

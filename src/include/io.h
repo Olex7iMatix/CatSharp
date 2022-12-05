@@ -3,4 +3,6 @@
 
 char* get_file_content(const char* filename);
 
+void writeToFile(char* filename, const char* content);
+
 #endif
