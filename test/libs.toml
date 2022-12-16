@@ -1,7 +1,0 @@
-[package]
-name = "Test"
-version = "0.0.0.1"
-author = "Olex7"
-
-[modules]
-CatSharp = "libs/CatSharp/CatSharp.cats"
