@@ -89,7 +89,13 @@ int main(int argc, char** argv) {
     } else if (strcmp(argv[1], "pack_info") == 0) {
         return print_pack_info(argv[2]);
     } else if (strcmp(argv[1], "compile") == 0) {
-        printf("Sorry but we don't have a compiler working : (\n");
+        if (strcmp(argv[3], "-o") == 0) {
+            FILE* fp;
+            fp = fopen(argv[4], "a");
+            return 0;
+        }
+
+        return 1;
     }
 
     return 0;

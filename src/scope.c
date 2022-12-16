@@ -103,7 +103,7 @@ AST_T* scope_get_var_function_def(scope_T* scope, const char* name) {
     for (int i = 0; i < scope->var_function_definitions_size; i++) {
         AST_T* def = scope->var_function_definitions[i];
 
-        if (strcmp(def->variable_definition_variable_name, name) == 0) return def;
+        if (strcmp(def->var_function_definition_name, name) == 0) return def;
     }
 
     for (int i = 0; i < scope->additional_scopes_size; i++) {

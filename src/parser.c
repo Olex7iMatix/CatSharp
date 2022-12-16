@@ -212,6 +212,7 @@ AST_T* parser_parse_function_call(parser_T* parser, scope_T* scope)
         function_call->function_call_arguments = calloc(1, sizeof(struct AST_STRUCT*));
 
         AST_T* ast_expr = parser_parse_expr(parser, scope);
+
         function_call->function_call_arguments[0] = ast_expr;
         function_call->function_call_arguments_size += 1;
 
@@ -467,6 +468,24 @@ AST_T* parser_parse_variable(parser_T* parser, scope_T* scope)
     char* token_value = parser->current_token->value;
     parser_eat(parser, TOKEN_ID, "var"); // var name or function call name
 
+    if (parser->current_token->type == TOKEN_PLUS) {
+        AST_T* previous_var = init_ast(AST_VARIABLE);
+        previous_var->variable_name = token_value;
+        previous_var->scope = scope;
+
+        parser_eat(parser, TOKEN_PLUS, "plus");
+
+        token_value = parser->current_token->value;
+        
+        parser_eat(parser, TOKEN_ID, "lmao");
+
+        AST_T* current_var = init_ast(AST_VARIABLE);
+        current_var->variable_name = token_value;
+        current_var->scope = scope;
+        
+        return parser_parse_plus(parser, scope, previous_var, current_var);
+    }
+
     if (parser->current_token->type == TOKEN_LPAREN)
         return parser_parse_function_call(parser, scope);
 
@@ -475,6 +494,28 @@ AST_T* parser_parse_variable(parser_T* parser, scope_T* scope)
     ast_variable->scope = scope;
 
     return ast_variable;
+}
+
+AST_T* parser_parse_plus(parser_T* parser, scope_T* scope, AST_T* a_1, AST_T* a_2) {
+    char* prev_id_name = a_1->variable_name;
+    char* cur_id_name = a_2->variable_name;
+    AST_T* prev_var = scope_get_var_def(scope, prev_id_name);
+    AST_T* cur_var = scope_get_var_def(scope, cur_id_name);
+    
+    if (!prev_var) {
+        printf("[Parser]: Cannot find variable `%s`.", prev_id_name);
+        exit(1);
+    }
+    if (!cur_var) {
+        printf("[Parser]: Cannot find variable `%s`.", cur_id_name);
+        exit(1);
+    }
+
+    AST_T* ast = init_ast(AST_ADD);
+    ast->add_prev_var  =   prev_var;
+    ast->add_cur_var   =   cur_var;
+
+    return ast;
 }
 
 AST_T* parser_parse_string(parser_T* parser, scope_T* scope)
@@ -518,6 +559,7 @@ AST_T* parser_parse_return_keyword(parser_T* parser, scope_T* scope)
 
 AST_T* parser_parse_id(parser_T* parser, scope_T* scope)
 {
+    printf("%s\n", parser->current_token->value);
     if (strcmp(parser->current_token->value, "var") == 0)
     {
         return parser_parse_variable_definition(parser, scope);
@@ -571,8 +613,17 @@ AST_T* parser_parse_comment(parser_T* parser, scope_T* scope) {
 AST_T* parser_parse_return(parser_T* parser, scope_T* scope) {
     parser_eat(parser, TOKEN_RETURN, "return");
     AST_T* ast = init_ast(AST_RETURN);
-    ast->return_value->string_value = parser->current_token->value;
-    parser_eat(parser, TOKEN_ID, "return");
+    switch (parser->current_token->type)
+    {
+    case TOKEN_STRING:
+        ast->return_value = init_ast(AST_STRING);
+        ast->return_value->string_value = parser->current_token->value;
+        parser_eat(parser, TOKEN_STRING, "");
+        break;
+    default:
+        printf("[Parser]: Unsupported return token type `%d`\n", parser->current_token->type);
+        exit(1);
+    }
     return ast;
 }
 

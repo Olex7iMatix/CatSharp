@@ -47,6 +47,7 @@ token_T* lexer_get_next_token(lexer_T* lexer) {
             case '}': return lexer_advance_with_token(lexer, init_token(TOKEN_RBRACE, lexer_get_current_char_as_string(lexer))); break;
             case '.': return lexer_advance_with_token(lexer, init_token(TOKEN_DOT, lexer_get_current_char_as_string(lexer))); break;
             case ',': return lexer_advance_with_token(lexer, init_token(TOKEN_COMMA, lexer_get_current_char_as_string(lexer))); break;
+            case '+': return lexer_advance_with_token(lexer, init_token(TOKEN_PLUS, lexer_get_current_char_as_string(lexer))); break;
         }
     }
 
@@ -122,7 +123,8 @@ token_T* lexer_collect_id(lexer_T* lexer) {
         return init_token(TOKEN_TRUE, value);
     } else if (strcmp(value, "false") == 0) {
         return init_token(TOKEN_FALSE, value);
-    }else if (strcmp(value, "return") == 0) {
+    }
+    else if (strcmp(value, "return") == 0) {
         return init_token(TOKEN_RETURN, value);
     }
 

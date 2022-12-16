@@ -19,6 +19,7 @@ typedef struct AST_STRUCT {
         AST_RETURN,
         AST_TRUE,
         AST_FALSE,
+        AST_ADD,
         AST_STRING,
         AST_INT,
         AST_FUNCTION_CALL,
@@ -67,6 +68,10 @@ typedef struct AST_STRUCT {
 
     /* AST_RETURN */
     struct AST_STRUCT* return_value;
+
+    /* AST_ADD */
+    struct AST_STRUCT* add_prev_var;
+    struct AST_STRUCT* add_cur_var;
 
     /* AST_WHILE_STATEMENT */
     struct AST_STRUCT* while_body;

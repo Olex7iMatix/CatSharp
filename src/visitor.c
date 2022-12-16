@@ -57,6 +57,14 @@ visitor_T* init_visitor() {
     return visitor;
 }
 
+AST_T* visitor_visit_compound(visitor_T* visitor, AST_T* node, scope_T* scope) {
+    for (int i = 0; i < node->compound_size; i++) {
+        visitor_visit(visitor, node->compound_value[i], scope);
+    }
+
+    return init_ast(AST_NOOP);
+}
+
 AST_T* visitor_visit(visitor_T* visitor, AST_T* node, scope_T* scope) {
     switch (node->type)
     {
@@ -76,6 +84,7 @@ AST_T* visitor_visit(visitor_T* visitor, AST_T* node, scope_T* scope) {
         case AST_FALSE: return visitor_visit_false(visitor, node, scope); break;
         case AST_BREAK: return visitor_visit_break(visitor, node, scope); break;
         case AST_RETURN: return visitor_visit_return(visitor, node, scope); break;
+        case AST_ADD: return visitor_visit_add(visitor, node, scope); break;
         case AST_STRING: return visitor_visit_string(visitor, node, scope); break;
         case AST_COMPOUND: return visitor_visit_compound(visitor, node, scope); break;
         case AST_NOOP: return node; break;
@@ -227,14 +236,33 @@ AST_T* visitor_visit_break(visitor_T* visitor, AST_T* node, scope_T* scope) {
 }
 
 AST_T* visitor_visit_return(visitor_T* visitor, AST_T* node, scope_T* scope) {
-    if (node->var_function_definition_body = (void*) 0) {
+    AST_T* ast = scope_get_var_function_def(scope, node->var_function_definition_name);
+
+    if (ast == (void*) 0) {
         printf("[Visitor]: Cannot use `return` outside variable function definition.\n");
         exit(1);
     }
 
-    node->var_function_definition_return_variable = node->return_value;
+    printf("%s\n", node->return_value->string_value);
+
+    AST_T* str = init_ast(AST_STRING);
+    str->string_value = node->return_value->string_value;
+    ast->var_function_definition_return_variable = str;
 
     return node;
+}
+
+AST_T* visitor_visit_add(visitor_T* visitor, AST_T* node, scope_T* scope) {
+    AST_T* ast = init_ast(AST_VARIABLE_DEFINITION);
+
+    AST_T* ast_val = init_ast(AST_STRING);
+    char* value;
+    sprintf(value, "%s%s", node->add_prev_var->variable_definition_value->string_value, node->add_cur_var->variable_definition_value->string_value);
+    ast_val->string_value = value;
+
+    ast->variable_definition_value = ast_val;
+
+    return ast;
 }
 
 #include "include/toml.h"
@@ -299,23 +327,15 @@ AST_T* visitor_visit_function_definition(visitor_T* visitor, AST_T* node, scope_
 
 AST_T* visitor_visit_var_function_definition(visitor_T* visitor, AST_T* node, scope_T* scope) {
     AST_T* var = node->var_function_definition_body;
-    AST_T* ast = visitor_visit(visitor, var, scope);
-
-    if (ast->var_function_definition_return_variable == (void*)0) {
-        printf("[Visitor]: Variable function should have `return` statement.\n");
-        exit(1);
-    }
-
-    AST_T* return_val = init_ast(AST_STRING);
-    return_val->string_value = ast->var_function_definition_return_variable->string_value;
-
-    scope_add_var_def(scope, return_val);
-
+    scope_add_var_function_def(scope, node);
+    
     return node;
 }
 
 AST_T* visitor_visit_variable(visitor_T* visitor, AST_T* node, scope_T* scope) {
+    printf("%s\n", node->variable_name);
     AST_T* vdef = scope_get_var_def(node->scope, node->variable_name);
+    printf("%s\n", vdef->variable_definition_value);
     
     if (vdef != (void*) 0)
         return visitor_visit(visitor, vdef->variable_definition_value, scope);
@@ -331,49 +351,72 @@ AST_T* visitor_visit_function_call(visitor_T* visitor, AST_T* node, scope_T* sco
     } else if (strcmp(node->function_call_name, "writeToFile") == 0)
     {
         return builtin_function_writeToFile(visitor, node->function_call_arguments, node->function_call_arguments_size, scope);
+    } else if (strcmp(node->function_call_name, "readFromFile") == 0)
+    {
+        // node->function_call_arguments, node->function_call_arguments_size, scope
+        if (node->function_call_arguments_size != 1) {
+            printf("[Visitor]: Function you are trying to call have more/less arguments.");
+            exit(1);
+        }
+        AST_T* return_val = init_ast(AST_STRING);
+        return_val->string_value = get_file_content(node->function_call_arguments[0]->string_value);
+        return return_val;
     }
 
     AST_T* fdef = scope_get_function_def(node->scope, node->function_call_name);
+    if (fdef == (void*) 0) {
+        AST_T* uwu = scope_get_var_function_def(node->scope, node->function_call_name);
 
-    if (fdef == (void*) 0){
-        printf("Undefined method `%s`\n", node->function_call_name);
-        exit (1);
-    }
+        int count = 0;
 
-    int count = 0;
+        for (int i = 0; i < uwu->var_function_definition_args_size; i++) {
+            AST_T* ast_var = (AST_T*) uwu->var_function_definition_args[i];
+            AST_T* ast_value = (AST_T*) node->function_call_arguments[i];
 
-    for (int i = 0; i < node->function_call_arguments_size; i++) {
-        AST_T* ast_var = (AST_T*) fdef->function_definition_args[i];
-        AST_T* ast_value = (AST_T*) node->function_call_arguments[i];
+            AST_T* var_def = init_ast(AST_VARIABLE_DEFINITION);
+            var_def->variable_definition_variable_name = calloc(strlen(ast_var->variable_name)+ 1, sizeof(char));
+            strcpy(var_def->variable_definition_variable_name, ast_var->variable_name);
+            var_def->variable_definition_value = ast_value;
+            
+            count += 1;
 
-        AST_T* var_def = init_ast(AST_VARIABLE_DEFINITION);
-        var_def->variable_definition_variable_name = calloc(strlen(ast_var->variable_name)+ 1, sizeof(char));
-        strcpy(var_def->variable_definition_variable_name, ast_var->variable_name);
-        var_def->variable_definition_value = ast_value;
+            scope_add_var_def(uwu->var_function_definition_body->scope, var_def);
+        }
+
+        if (node->function_call_arguments_size != count) {
+            printf("[Visitor]: Function you are trying to call have less or more arguments!\n");
+            exit(1);
+        }
         
-        count += 1;
+        AST_T* vfdef = visitor_visit(visitor, uwu->var_function_definition_body, scope);
 
-        scope_add_var_def(fdef->function_definition_body->scope, var_def);
+        if (vfdef->var_function_definition_return_variable == (void*)0) {
+            printf("[Visitor]: Variable function should have `return` statement.\n");
+            exit(1);
+        }
+
+        AST_T* return_val = init_ast(AST_STRING);
+        return_val->string_value = vfdef->var_function_definition_return_variable->string_value;
+
+        AST_T* return_vdef = init_ast(AST_VARIABLE);
+        // return_vdef->variable_definition_value = return_val;
+        // return_vdef->variable_name = "msg";
+        return_vdef->variable_definition_value = init_ast(AST_STRING);
+        return_vdef->variable_definition_value->string_value = "UwU";
+        return_vdef->variable_definition_variable_name = "msg";
+
+        AST_T* returned_ast = scope_add_var_def(node->scope, return_vdef);
+        printf("var name: %s\n", returned_ast->variable_definition_variable_name);
+    } else {
+        return visitor_visit(visitor, fdef->function_definition_body, scope);
     }
 
-    if (fdef->function_call_arguments_size != count) {
-        printf("[Visitor]: Function you are trying to call have less or more arguments!\n");
-        exit(1);
-    }
-    
-    return visitor_visit(visitor, fdef->function_definition_body, scope);
+    printf("Undefined method `%s`\n", node->function_call_name);
+    exit(1);
 }
 
 AST_T* visitor_visit_string(visitor_T* visitor, AST_T* node, scope_T* scope) {
     return node;
-}
-
-AST_T* visitor_visit_compound(visitor_T* visitor, AST_T* node, scope_T* scope) {
-    for (int i = 0; i < node->compound_size; i++) {
-        visitor_visit(visitor, node->compound_value[i], scope);
-    }
-
-    return init_ast(AST_NOOP);
 }
 
 AST_T* visitor_visit_pack(visitor_T* visitor, AST_T* node, scope_T* scope) {

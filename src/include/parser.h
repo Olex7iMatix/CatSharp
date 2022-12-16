@@ -59,6 +59,8 @@ AST_T* parser_parse_break(parser_T* parser, scope_T* scope);
 
 AST_T* parser_parse_id(parser_T* parser, scope_T* scope);
 
+AST_T* parser_parse_plus(parser_T* parser, scope_T* scope, AST_T* a_1, AST_T* a_2);
+
 AST_T* parser_parse_comment(parser_T* parser, scope_T* scope);
 
 AST_T* parser_parse_return(parser_T* parser, scope_T* scope);
