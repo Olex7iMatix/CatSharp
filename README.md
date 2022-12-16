@@ -8,7 +8,7 @@ CatSharp Support Server (Discord): https://discord.io/catsharp
 
 # Instalation
 ## You need:
-* Makefile
+* make
 * gcc
 ## Compile:
 Download repo from **https://github.com/** and unzip it to your folder. Then open directory with Command Prompt and type ```make```.
@@ -38,7 +38,7 @@ CatSharp = "<Your CatSharp path>"
 # CatSharp packages
 
 ## CatSharp
-This is an official package from CatSharp! If you don't want to copy code or download older/newer versions feel free to use CatLib
+This is an official package from CatSharp! If you don't want to copy code or download older/newer versions feel free to use [CatLib](https://github.com/Olex7iMatix/CatLib "CatLib")
 ### CatSharp.cats
 ```cats
 pack CatSharp {
